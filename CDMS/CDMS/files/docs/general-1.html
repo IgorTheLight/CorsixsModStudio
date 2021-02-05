@@ -1,0 +1,178 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+	<head>
+		<title>Corsix's Mod Studio - General</title>
+		<meta http-equiv="Pragma" content="no-cache" />
+		<meta http-equiv="Expires" content="-1" />
+		<meta http-equiv="Cache-Control" content="no-cache" />
+		<link rel="stylesheet" type="text/css" href="conspiracy.css" />
+			</head>
+	<body>
+		<div id="layout_wrap">
+			<div id="content_wrap">
+				<div id="content_head">
+					<a href="general-1.html">
+						<img src="trans.gif" alt="Corsix's DoW and CoH Mod Studio"/>
+					</a>
+				</div>
+				<div id="content_menu">
+					<ul>
+						<li><a href="general-1.html">General</a></li>
+						<li><a href="usage-guide-2.html">Usage Guide</a></li>
+						<li><a href="tutorials-4.html">Tutorials</a></li>
+						<li><a href="advanced-3.html">Advanced</a></li>
+						<li><a href="downloads-5.html">Downloads</a></li>
+					</ul>
+				</div>
+				<div id="no_css">
+					It looks like you're using a browser that does not support CSS - why don't you upgrade to a totally free new browser like <a href="http://www.mozilla.com/firefox/">Firefox</a>?
+				</div>
+				<div id="content_main">
+					<h3>Corsix's Mod Studio</h3>
+<div><div class="img_div"><img src="images/thumbs/C.png" border="0"/></div>Corsix's Mod Studio is free and open source modding tool for Relic Entertainment's "Dawn of War", "Dawn of War: Winter Assault", "Dawn of War: Dark Crusade", "Company of Heroes" and "Company of Heroes: Opposing Fronts". It allows modification of:<ul>
+<li>Unit, building & vehicle stats (RGD files)</li>
+<li>Textures and UI elements (TGA/DDS/RGT files; CoH only)</li>
+<li>Model materials (RGM files; CoH only)</li>
+<li>AI and map scripts (AI/SCAR files)</li>
+<li>Compiled FX files (BFX files; CoH only)</li>
+<li>Locilized text (UCS files)</li></ul>
+It also allows:<ul>
+<li>Loading and creating game data archives (SGA files)</li>
+<li>Viewing and burning data generic unit stats (LUA files)</li>
+<li>Creating and running RGD macros (LUA files)</li></ul></div>
+
+<h3>Where to start</h3>
+<div><div class="img_div"><img src="images/thumbs/play.png" border="0"/></div>If you want to start modding, or want to learn how to mod using this tool, then the <a href="usage-guide-2.html">usage guide</a> is the best thing to read through. Once you've understood this, you can start modding the best way - trying something and seeing what happens. Of course, it may be easier to check if the <a href="tutorials-4.html">tutorials list</a> has what you're interested in. If you cannot find it there, then the Relicnews <a href="http://forums.relicnews.com/forumdisplay.php?f=189">CoH modding forum</a> is where to ask your questions.</div>
+
+<h3>Changes from 0.5.4 to 0.5.5</h3>
+<div><ul>
+<li>Initial DoW:Soulstorm support</li>
+<li>New tool to convert UCS files to DAT files for use with CoH AE</li>
+<li>When Luas are burnt from DataGeneric, the RGDs will be saved in Data instead of DataGeneric</li>
+<li>Fixed possible crash when adding entries to UCS file</li>
+<li>Fixed possible crashes with DoW DPS tool</li>
+<li>Fixed possible crash when loading/burning Lua files</li>
+</ul></div>
+
+<h3>Changes from 0.5.3 to 0.5.4</h3>
+<div><ul>
+<li>Non-SGA files in a CoH scenario pack folder no longer cause errors when loading a mod</li>
+<li>Updated locales (including addition of ChineseSimp for CoH/OF)</li>
+<li>Fixed crashes during mod loading for CoH mods with unconventional directory structures</li>
+<li>Source code cleanup w/ updated compile instructions</li>
+</ul></div>
+
+<h3>Changes from 0.5.2 to 0.5.3</h3>
+<div><ul>
+<li>Initial CoH:OF support</li>
+<li>RGD Macros use Lua 5.1 rather than 5.0, along with several other changes; RGD Macro documentation and samples have thus been changed</li>
+<li>When a CoH mod is loaded, the SCAR editor uses a CoH based scardoc rather than a DoW based one</li>
+<li>CoH scenario packs (SGAs) are loaded for CoH mods</li>
+<li>Improved RGD editor / UCS editor integration</li>
+<li>LUA files can be burnt from DataGeneric</li>
+<!-- <li>Added tool in preparation for CoH AE release</li> (Moved to 0.5.4) -->
+<li>Improved SGA creation interface</li>
+<li>Fixed potential buffer overflow attacks in SGA loading code</li>
+<li>Fixed bug when extracting from SGA archives with more than 32767 files in them</li>
+<li>Rainman.dll and ModStudio.exe can now be compiled with differing compilers  and runtime libraries (hi fneep)</li>
+</ul></div>
+
+<h3>Changes from 0.5.1 to 0.5.2</h3>
+<div><ul>
+<li>RGD macros are available</li>
+<li>Added the ability to deburn various files in preparation for OE release</li>
+<li>SCAR editor syntax checking will check against Lua 5.1 rather than 5.0 when a CoH mod is loaded</li>
+<li>Added function list dropdown to SCAR editor</li>
+<li>Donation button can be permanently hidden via the Help menu</li>
+<li>Engine.sga and the Engine data folder are loaded for DoW/WA/DC mods</li>
+<li>"Copy filename to clipboard" available for all files</li>
+<li>RGD editor bugfixes (you shouldn't have to press Save so regularly any more)</li>
+<li>"View warnings.log" works for CoH mods</li>
+<li>Lifted a restriction from TGA loading code</li>
+<li>Fixed a potential crash when saving a copy of an image</li>
+</ul></div>
+
+<h3>Changes from 0.5.0b to 0.5.1</h3>
+<div><ul>
+<li>Fixed bug with converting RGTs to TGAs</li>
+<li>Fixed crash from Extract All tool</li>
+<li>RGTs, DDSes and TGAs can be previewed inside the program</li>
+<li>More options for converting between RGT and other image formats: Any RGT to/from TGA, Any RGT to/from DDS, TGA to/from DDS</li>
+<li>Table reference fields in RGDs/LUAs have a button on them which brings up a file selector window, to avoid typing the filename by hand</li>
+<li>UCS fields in RGDs/LUAs have a button on them which brings up the UCS editor</li>
+<li>Changes to UCS files are discarded when the editor is closed and changes not saved, rather than being retained in memory</li>
+</ul></div>
+
+<h3>Changes from 0.5.0 to 0.5.0b</h3>
+<div><ul>
+<li>Fixed bug regarding right clicking on tree items</li>
+</ul></div>
+
+<h3>Changes from 0.4.3 to 0.5.0</h3>
+<div><ul>
+<li>Tab bars can be split; drag a tab to the edge of a window to split it</li>
+<li>New button to bring up a list of open tabs</li>
+<li>docs folder and DoW_Mod_Studio_Files folder replaced by Mod_Studio_Files folder</li>
+<li>Icons on the tools tab arrange properly on application start</li>
+<li>Toolbars added to RGD editor, UCS editor and SCAR/text editor</li>
+<li>Closing an RGD editor tab, UCS editor tab or SCAR/text editor tab will prompt you to save changes if they need to be saved</li>
+<li>Bug with extracting a folder not extracting all files is now fixed</li>
+<li>Simplified the extract folder window</li>
+<li>Additional resources added to the Help menu</li>
+<li>Right clicking on whitespace in RGD editor no longer crashes program</li>
+<li>The "Relic's Tools" menu works with DC mod tools</li>
+<li>Minor graphical changes</li>
+</ul></div>
+
+<h3>Changes from 0.4.2b to 0.4.3</h3>
+<div><ul>
+<li>(CoH only) Files part of vanilla CoH and not part of your mod are displayed in blue, not red</li>
+<li>(CoH only) Materials in RGM files can be tweaked with (eg. what textures a model uses)</li>
+<li>(CoH only) ABP files can now be edited</li>
+<li>(CoH only) UCS editor works</li>
+<li>RGD copy & paste</li>
+<li>"View as text file" works for all files</li>
+<li>"Make a copy of this file" action available for all files</li>
+</ul></div>
+
+<h3>Changes from 0.4.2 to 0.4.2b</h3>
+<div><ul>
+<li>Several major bugfixes</li>
+<li>DoW:DC support</li>
+</ul></div>
+
+<h3>Changes from 0.4.1b to 0.4.2</h3>
+<div><ul>
+<li>Wrote this documentation</li>
+<li>Added UCS editor</li>
+<li>Made cosmetic changes to the SCAR editor</li>
+<li>(CoH only) Added primitive BFX editor (data\art\fx)</li>
+<li>(CoH only) Added RGT to DDS/TGA convertor (data\art)</li>
+<li>(CoH only) Added DDS to RGT convertor (data\art)</li>
+<li>(DoW/WA/DC only) Added weapon DPS table calculator</li>
+<li>(DoW/WA only) DataGeneric is on the files list too</li>
+<li>More complete RGD dictionary</li>
+<li>Tools can be launched from the Mod menu as well as the Tools tab</li>
+<li>Added tool to refresh files list</li>
+<li>Updated application graphics</li>
+</ul></div>
+
+<h3>Changes from 0.4.0 to 0.4.1(b)</h3>
+<div>If you are upgrading from 0.4.0, then you <b>must</b>:<br/>
+Delete the contents of your Company of Heroes\WW2\Data folder. When you launch the program, you want to click the "New Mod" button. Pick "Company of Heroes" from the games list, enter a name like "Corsix's Mod" (replace my name with yours) and press Create. From now on, when you launch the application, load this mod, and <b>not</b> RelicCOH.module.</div>
+
+<h3>Donators</h3>
+<div>Generous donations have been received from: snake_risken, Delphy, Mannerheim, KoGar, Kutter, Julian Harris, CrizeCaldron, MasterofOblivion & Rick Funk. Please donate too!
+<form action="https://www.paypal.com/cgi-bin/webscr" method="post">
+<input type="hidden" name="encrypted" value="-----BEGIN PKCS7-----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-----END PKCS7-----
+"/><input type="hidden" name="cmd" value="_s-xclick"/>
+<input type="image" src="https://www.paypal.com/en_US/i/btn/x-click-but21.gif" class="donate" name="submit" alt="Make a donation"/>
+</form>
+</div>
+
+					<div id="disclaimer">This documentation is provided under the GNU General Public License. All trademarks / copyrights are tm/r/c their respective owners. 					</div>
+				</div>
+			</div>
+		</div>
+	</body>
+</html>

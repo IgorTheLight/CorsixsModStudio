@@ -1,0 +1,256 @@
+INCLUDE "CDoWModule.h"
+HEADERPROTECT _LUA_INTERFACE_H_
+CLASS IFileStore::IStream Istream
+	DESTROY delete obj;
+END
+CLASS IFileStore::IOutputStream IoutputStream
+	DESTROY delete obj;
+END
+CLASS CSgaFile CsgaFile
+	DESTROY delete obj;
+END
+CLASS CUcsFile CucsFile
+	DESTROY delete obj;
+END
+DEF CDoWModule::IsDollarString isUcsReference
+	ARG const char* TO string
+	RETURN bool TO boolean
+END
+CLASS CDoWModule CdowModule
+	CREATE new CDoWModule;
+	DESTROY delete obj;
+	DEF SetLocale setLocale
+		ARG const char* TO string
+		RETURN bool TO boolean
+	END
+	DEF GetLocale getLocale
+		RETURN const char* TO string
+	END
+	DEF New new
+		RETURN bool TO boolean
+	END
+	DEF Load load
+		ARG const char* TO string
+		RETURN bool TO boolean
+	END
+	DEF Save save
+		ARG const char* TO string
+		RETURN bool TO boolean
+	END
+	DEF RebuildFileview rebuildFileview
+		ARG const char* TO string
+		RETURN bool TO boolean
+	END
+	DEF GetFileviewHash getFileviewHash
+		RETURN unsigned long TO number
+	END
+	DEF GetFilesModName getFilesModName
+		RETURN const char* TO string
+	END
+	DEFSTATIC GetEngineModName getFilesEngineName
+		RETURN const char* TO string
+	END
+	DEF VInit Vinit
+		RETURN bool TO boolean
+	END
+	DEF VOpenStream VopenStream
+		ARG const char* TO string
+		RETURN IFileStore::IStream* TO LUAOWNED Istream
+	END
+	DEF VOpenOutputStream VopenOutputStream
+		ARG const char* TO string
+		ARG bool TO boolean
+		RETURN IFileStore::IOutputStream* TO LUAOWNED IoutputStream
+	END
+	DEF GetUIName getUiName
+		RETURN const char* TO string
+	END
+	DEF GetDescription getDescription
+		RETURN const char* TO string
+	END
+	DEF GetDllName getDllName
+		RETURN const char* TO string
+	END
+	DEF GetModFolder getModFolder
+		RETURN const char* TO string
+	END
+	DEF GetTextureFE getTextureFe
+		RETURN const char* TO string
+	END
+	DEF GetTextureIcon getTextureIcon
+		RETURN const char* TO string
+	END
+	DEF GetVersionMajor getVersionMajor
+		RETURN long TO number
+	END
+	DEF GetVersionMinor getVersionMinor
+		RETURN long TO number
+	END
+	DEF GetVersionRevision getVersionRevision
+		RETURN long TO number
+	END
+	DEF SetUIName setUiName
+		ARG const char* TO string
+		RETURN bool TO boolean
+	END
+	DEF SetDescription setDescription
+		ARG const char* TO string
+		RETURN bool TO boolean
+	END
+	DEF SetDllName setDllName
+		ARG const char* TO string
+		RETURN bool TO boolean
+	END
+	DEF SetModFolder setModFolder
+		ARG const char* TO string
+		RETURN bool TO boolean
+	END
+	DEF SetTextureFE setTextureFe
+		ARG const char* TO string
+		RETURN bool TO boolean
+	END
+	DEF SetTextureIcon setTextureIcon
+		ARG const char* TO string
+		RETURN bool TO boolean
+	END
+	DEF SetVersionMajor setVersionMajor
+		ARG long TO number
+		RETURN bool TO boolean
+	END
+	DEF SetVersionMinor setVersionMinor
+		ARG long TO number
+		RETURN bool TO boolean
+	END
+	DEF SetVersionRevision setVersionRevision
+		ARG long TO number
+		RETURN bool TO boolean
+	END
+	DEF GetDataFolderCount getDataFolderCount
+		RETURN long TO number
+	END
+	DEF GetDataFolder getDataFolderName
+		ARG long TO number
+		RETURN const char* TO string
+	END
+	DEF GetDataFolderID getDataFolderId
+		ARG long TO number
+		RETURN long TO number
+	END
+	DEF SwapDataFolders dataFolderSwap
+		ARG long TO number
+		ARG long TO number
+		RETURN bool TO boolean
+	END
+	DEF AddDataFolder dataFolderAdd
+		ARG const char* TO string
+		RETURN bool TO boolean
+	END
+	DEF RemoveDataFolder dataFolderRemove
+		ARG long TO number
+		RETURN bool TO boolean
+	END
+	DEF GetArchiveCount getDataArchiveCount
+		RETURN long TO number
+	END
+	DEF GetArchive getDataArchiveName
+		ARG long TO number
+		RETURN const char* TO string
+	END
+	DEF GetArchiveID getDataArchiveId
+		ARG long TO number
+		RETURN long TO number
+	END
+	DEF GetArchiveHandle getDataArchiveHandle
+		ARG long TO number
+		RETURN CSgaFile* TO CsgaFile
+	END
+	DEF SwapArchives dataArchiveSwap
+		ARG long TO number
+		ARG long TO number
+		RETURN bool TO boolean
+	END
+	DEF AddArchive dataArchiveAdd
+		ARG const char* TO string
+		RETURN bool TO boolean
+	END
+	DEF RemoveArchive dataArchiveRemove
+		ARG long TO number
+		RETURN bool TO boolean
+	END
+	DEF GetRequiredCount getRequiredModCount
+		RETURN long TO number
+	END
+	DEF GetRequired getRequiredModName
+		ARG long TO number
+		RETURN const char* TO string
+	END
+	DEF GetRequiredID getRequiredModId
+		ARG long TO number
+		RETURN long TO number
+	END
+	DEF GetRequiredHandle getRequiredModHandle
+		ARG long TO number
+		RETURN CDoWModule* TO CdowModule
+	END
+	DEF SwapRequireds requiredModSwap
+		ARG long TO number
+		ARG long TO number
+		RETURN bool TO boolean
+	END
+	DEF AddRequired requiredModAdd
+		ARG const char* TO string
+		RETURN bool TO boolean
+	END
+	DEF RemoveRequired requiredModRemove
+		ARG long TO number
+		RETURN bool TO boolean
+	END
+	DEF GetCompatableCount getCompatibleModCount
+		RETURN long TO number
+	END
+	DEF GetCompatable getCompatibleModName
+		ARG long TO number
+		RETURN const char* TO string
+	END
+	DEF GetCompatableID getCompatibleModId
+		ARG long TO number
+		RETURN long TO number
+	END
+	DEF SwapCompatables compatibleModSwap
+		ARG long TO number
+		ARG long TO number
+		RETURN bool TO boolean
+	END
+	DEF AddCompatable compatibleModAdd
+		ARG const char* TO string
+		RETURN bool TO boolean
+	END
+	DEF RemoveCompatable compatibleModRemove
+		ARG long TO number
+		RETURN bool TO boolean
+	END
+	DEF ResolveUCS getUcsByString
+		ARG const char* TO string
+		RETURN const wchar_t* TO string
+	END
+	DEF ResolveUCS getUcsByInt
+		ARG unsigned long TO number
+		RETURN const wchar_t* TO string
+	END
+	DEF GetUcsFileCount getUcsFileCount
+		RETURN long TO number
+	END
+	DEF GetUcsFileName getUcsFileName
+		ARG long TO number
+		RETURN const char* TO string
+	END
+	DEF GetUcsFile getUcsFileHandle
+		ARG long TO number
+		RETURN CUcsFile* TO CucsFile
+	END
+	DEF RegisterNewUCS ucsAdd
+		ARG const char* TO string
+		ARG CUcsFile* TO COWNED CucsFile
+		RETURN bool TO boolean
+	END
+END

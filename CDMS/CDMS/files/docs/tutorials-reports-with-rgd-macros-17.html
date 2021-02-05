@@ -1,0 +1,262 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+	<head>
+		<title>Corsix's Mod Studio - Tutorials - Making Reports with RGD Macros</title>
+		<meta http-equiv="Pragma" content="no-cache" />
+		<meta http-equiv="Expires" content="-1" />
+		<meta http-equiv="Cache-Control" content="no-cache" />
+		<link rel="stylesheet" type="text/css" href="conspiracy.css" />
+			</head>
+	<body>
+		<div id="layout_wrap">
+			<div id="content_wrap">
+				<div id="content_head">
+					<a href="general-1.html">
+						<img src="trans.gif" alt="Corsix's DoW and CoH Mod Studio"/>
+					</a>
+				</div>
+				<div id="content_menu">
+					<ul>
+						<li><a href="general-1.html">General</a></li>
+						<li><a href="usage-guide-2.html">Usage Guide</a></li>
+						<li><a href="tutorials-4.html">Tutorials</a></li>
+						<li><a href="advanced-3.html">Advanced</a></li>
+						<li><a href="downloads-5.html">Downloads</a></li>
+					</ul>
+				</div>
+				<div id="no_css">
+					It looks like you're using a browser that does not support CSS - why don't you upgrade to a totally free new browser like <a href="http://www.mozilla.com/firefox/">Firefox</a>?
+				</div>
+				<div id="content_main">
+					<h3>Report Data</h3>
+<div>First step in making a report is deciding what data to use, and where that data comes from. For this report, we're looking at unit HP, which comes from RGDs in the attrib\ebps\races folder. For each RGD we want to know:<ul>
+<li>HP (GameData\health_ext\hitpoints)</li>
+<li>Name (GameData\ui_ext\screen_name)</li>
+<li>Is the unit only in the campaign? (filename will have "sp" in it)</li></ul>
+A rough idea of the process is also helpful:<ol>
+<li>Make list of units that have HP</li>
+<li>Sort list according to HP</li>
+<li>Print list</li></ol></div>
+
+<h3>Making the unit list</h3>
+<div>We will have a table called unit_list into which suitable RGDs are placed: (The first line here is a neat little hack to put methods from <code>table</code> into the table itself)<pre class="lua" style="color: #000066; border: 1px solid #d0d0d0; background-color: #f0f0f0;">unit_list = <span class="kw1">setmetatable</span><span class="br0">(</span><span class="br0">{</span><span class="br0">}</span>, <span class="br0">{</span>__index = <span class="kw1">table</span><span class="br0">}</span><span class="br0">)</span>
+ 
+<span class="kw1">function</span> each_file<span class="br0">(</span>rgd<span class="br0">)</span>
+	<span class="kw1">if</span> rgd:GET<span class="br0">(</span><span class="st0">"GameData"</span>,<span class="st0">"health_ext"</span>,<span class="st0">"hitpoints"</span><span class="br0">)</span> <span class="kw1">then</span>
+		unit_list:insert<span class="br0">(</span>rgd<span class="br0">)</span>
+	<span class="kw1">end</span>
+<span class="kw1">end</span></pre></div>
+
+<h3>Sorting the list</h3>
+<div>By using the at_end function, we can carry out an action after all the RGDs have been processed. This is the perfect time for sorting our list: (no need to use GET() as we checked that the RGD had a hitpoint value before inserting it into the list)<pre class="lua" style="color: #000066; border: 1px solid #d0d0d0; background-color: #f0f0f0;"><span class="kw1">function</span> at_end<span class="br0">(</span><span class="br0">)</span>
+	unit_list:<span class="kw1">sort</span><span class="br0">(</span> <span class="br0">[</span> <span class="br0">(</span>a,b<span class="br0">)</span>
+		| a.GameData.health_ext.hitpoints
+		> b.GameData.health_ext.hitpoints
+	<span class="br0">]</span> <span class="br0">)</span>
+<span class="kw1">end</span></pre></div>
+
+<h3>Printing the list</h3>
+<div>We can only print the list after we've sorted it, so we will add printing code after the sorting code. For now we'll print the filename of the rgd (minus the initial "attrib\attrib\ebps\") along with the hitpoint value:<pre class="lua" style="color: #000066; border: 1px solid #d0d0d0; background-color: #f0f0f0;"><span class="kw1">function</span> at_end<span class="br0">(</span><span class="br0">)</span>
+	unit_list:<span class="kw1">sort</span><span class="br0">(</span> <span class="br0">[</span> <span class="br0">(</span>a,b<span class="br0">)</span>
+		| a.GameData.health_ext.hitpoints
+		> b.GameData.health_ext.hitpoints
+	<span class="br0">]</span> <span class="br0">)</span>
+	<span class="kw1">for</span> pos,rgd <span class="kw1">in</span> <span class="kw1">ipairs</span><span class="br0">(</span>unit_list<span class="br0">)</span>
+		<span class="kw1">local</span> unit_name = rgd.path:after <span class="st0">"ebps<span class="es0">\\</span>"</span>
+		<span class="kw1">print</span><span class="br0">(</span><span class="st0">"#"</span> .. pos .. <span class="st0">": "</span> .. unit_name .. <span class="st0">" ("</span>
+		.. rgd.GameData.health_ext.hitpoints .. <span class="st0">" hp)"</span><span class="br0">)</span>
+	<span class="kw1">end</span>
+<span class="kw1">end</span></pre></div>
+
+<h3>Full macro, version 1</h3>
+<div>Here is the complete macro so far:<pre class="lua" style="color: #000066; border: 1px solid #d0d0d0; background-color: #f0f0f0;">unit_list = <span class="kw1">setmetatable</span><span class="br0">(</span><span class="br0">{</span><span class="br0">}</span>, <span class="br0">{</span>__index = <span class="kw1">table</span><span class="br0">}</span><span class="br0">)</span>
+ 
+<span class="kw1">function</span> each_file<span class="br0">(</span>rgd<span class="br0">)</span>
+	<span class="kw1">if</span> rgd:GET<span class="br0">(</span><span class="st0">"GameData"</span>,<span class="st0">"health_ext"</span>,<span class="st0">"hitpoints"</span><span class="br0">)</span> <span class="kw1">then</span>
+		unit_list:insert<span class="br0">(</span>rgd<span class="br0">)</span>
+	<span class="kw1">end</span>
+<span class="kw1">end</span>
+ 
+<span class="kw1">function</span> at_end<span class="br0">(</span><span class="br0">)</span>
+	unit_list:<span class="kw1">sort</span><span class="br0">(</span> <span class="br0">[</span> <span class="br0">(</span>a,b<span class="br0">)</span>
+		| a.GameData.health_ext.hitpoints
+		> b.GameData.health_ext.hitpoints
+	<span class="br0">]</span> <span class="br0">)</span>
+	<span class="kw1">for</span> pos,rgd <span class="kw1">in</span> <span class="kw1">ipairs</span><span class="br0">(</span>unit_list<span class="br0">)</span>
+		<span class="kw1">local</span> unit_name = rgd.path:after <span class="st0">"ebps<span class="es0">\\</span>"</span>
+		<span class="kw1">print</span><span class="br0">(</span><span class="st0">"#"</span> .. pos .. <span class="st0">": "</span> .. unit_name .. <span class="st0">" ("</span>
+		.. rgd.GameData.health_ext.hitpoints .. <span class="st0">" hp)"</span><span class="br0">)</span>
+	<span class="kw1">end</span>
+<span class="kw1">end</span></pre>The output should consist of lots of lines like these:<pre class="text" style="color: #000066; border: 1px solid #d0d0d0; background-color: #f0f0f0;">...
+#14: races\axis\buildings\hq_3.rgd (1500 hp)
+#15: races\allies\buildings\hq_4.rgd (1500 hp)
+#16: races\allies\buildings\hq_sp_m06.rgd (1500 hp)
+#17: races\allies\buildings\hq_2.rgd (1500 hp)
+#18: races\axis\vehicles\tiger_ace.rgd (1500 hp)
+#19: races\axis\buildings\hq_sp_noterritory.rgd (1500 hp)
+#20: races\allies\buildings\hq_3.rgd (1500 hp)
+...</pre></div>
+
+<h3>Replacing file name with unit name</h3>
+<div>Let's change the printing code to get the value of GameData\ui_ext\screen_name, turn it into text if it's a UCS reference, and then print that in addition to the file name. If screen_name is "$0" (eg, the default UCS reference), then we'll treat it as if screen_name didn't exist. We'll then use the UCS() function to turn the UCS reference into normal text:<pre class="lua" style="color: #000066; border: 1px solid #d0d0d0; background-color: #f0f0f0;"><span class="kw1">function</span> at_end<span class="br0">(</span><span class="br0">)</span>
+	unit_list:<span class="kw1">sort</span><span class="br0">(</span> <span class="br0">[</span> <span class="br0">(</span>a,b<span class="br0">)</span>
+		| a.GameData.health_ext.hitpoints
+		> b.GameData.health_ext.hitpoints
+	<span class="br0">]</span> <span class="br0">)</span>
+	<span class="kw1">for</span> pos,rgd <span class="kw1">in</span> <span class="kw1">ipairs</span><span class="br0">(</span>unit_list<span class="br0">)</span>
+		<span class="kw1">local</span> unit_name = rgd.path:after <span class="st0">"ebps<span class="es0">\\</span>"</span>
+		screen_name = rgd.GameData:GET<span class="br0">(</span><span class="st0">"ui_ext"</span>,<span class="st0">"screen_name"</span><span class="br0">)</span>
+		<span class="kw1">if</span> screen_name <span class="kw1">and</span> screen_name != <span class="st0">"$0"</span>
+			screen_name = UCS<span class="br0">(</span>screen_name<span class="br0">)</span>
+			unit_name = screen_name..<span class="st0">" ("</span>..unit_name..<span class="st0">")"</span>
+		<span class="kw1">end</span>
+		<span class="kw1">print</span><span class="br0">(</span><span class="st0">"#"</span> .. pos .. <span class="st0">": "</span> .. unit_name .. <span class="st0">" ("</span>
+		.. rgd.GameData.health_ext.hitpoints .. <span class="st0">" hp)"</span><span class="br0">)</span>
+	<span class="kw1">end</span>
+<span class="kw1">end</span></pre>Output is now something like this:<pre class="text" style="color: #000066; border: 1px solid #d0d0d0; background-color: #f0f0f0;">...
+#14: Reich Headquarters (races\axis\buildings\hq_3.rgd) (1500 hp)
+#15: Headquarters (races\allies\buildings\hq_4.rgd) (1500 hp)
+#16: Headquarters (races\allies\buildings\hq_sp_m06.rgd) (1500 hp)
+#17: Headquarters (races\allies\buildings\hq_2.rgd) (1500 hp)
+#18: Tiger Ace (races\axis\vehicles\tiger_ace.rgd) (1500 hp)
+...</pre></div>
+
+<h3>Filtering out campaign files</h3>
+<div>Campaign files all have "sp" appear in the filename (eg. "rifleman_sp.rgd"), but not every file with "sp" in the name is from the campaign (eg. "spartaaa.rgd"). Therefore the problem is slightly more complex than looking for "sp" in the name. A better filter is: slash/underscore followed by "sp" followed by slash/underscore/dot. If a file path matches that, we'll say it's from the campaign. Therefore we'll only add a file to our list if it doesn't match that:<pre class="lua" style="color: #000066; border: 1px solid #d0d0d0; background-color: #f0f0f0;">unit_list = <span class="kw1">setmetatable</span><span class="br0">(</span><span class="br0">{</span><span class="br0">}</span>, <span class="br0">{</span>__index = <span class="kw1">table</span><span class="br0">}</span><span class="br0">)</span>
+campaign_file = <span class="st0">"[/_<span class="es0">\\</span>]sp[/_%.<span class="es0">\\</span>]"</span>
+ 
+<span class="kw1">function</span> each_file<span class="br0">(</span>rgd<span class="br0">)</span>
+	<span class="kw1">if</span> <span class="br0">(</span><span class="kw1">not</span> rgd.path:find<span class="br0">(</span>campaign_file<span class="br0">)</span><span class="br0">)</span> <span class="kw1">and</span>
+		rgd:GET<span class="br0">(</span><span class="st0">"GameData"</span>,<span class="st0">"health_ext"</span>,<span class="st0">"hitpoints"</span><span class="br0">)</span> <span class="kw1">then</span>
+		unit_list:insert<span class="br0">(</span>rgd<span class="br0">)</span>
+	<span class="kw1">end</span>
+<span class="kw1">end</span></pre>Output is looking slightly better:<pre class="text" style="color: #000066; border: 1px solid #d0d0d0; background-color: #f0f0f0;">...
+#12: Headquarters (races\allies\buildings\hq_3.rgd) (1500 hp)
+#13: Tiger Ace (races\axis\vehicles\tiger_ace.rgd) (1500 hp)
+#14: Headquarters (races\allies\buildings\hq.rgd) (1500 hp)
+#15: Tiger (races\axis\vehicles\tiger.rgd) (1064 hp)
+#16: Tiger Ace (races\axis\vehicles\tiger_spg_ace.rgd) (1064 hp)
+#17: M26 Pershing (races\allies\vehicles\m26_pershing.rgd) (990 hp)
+...</pre></div>
+
+<h3>Filtering out duplicates</h3>
+<div>After looking at the output, you'll see that many units have several variations with the same name and hp value. We can filter these out by keeping a list of unit names and hp values, and before printing a result, checking if it is unique. One caveat is that we can no longer use the 'pos' variable given to us from ipairs as we may choose not to print some entries:<pre class="lua" style="color: #000066; border: 1px solid #d0d0d0; background-color: #f0f0f0;"><span class="kw1">function</span> at_end<span class="br0">(</span><span class="br0">)</span>
+	unit_list:<span class="kw1">sort</span><span class="br0">(</span> <span class="br0">[</span> <span class="br0">(</span>a,b<span class="br0">)</span>
+		| a.GameData.health_ext.hitpoints
+		> b.GameData.health_ext.hitpoints
+	<span class="br0">]</span> <span class="br0">)</span>
+	<span class="kw1">local</span> pos = <span class="nu0">0</span>
+	<span class="kw1">for</span> _,rgd <span class="kw1">in</span> <span class="kw1">ipairs</span><span class="br0">(</span>unit_list<span class="br0">)</span>
+		<span class="kw1">local</span> unit_name = rgd.path:after <span class="st0">"ebps<span class="es0">\\</span>"</span>
+		screen_name = rgd.GameData:GET<span class="br0">(</span><span class="st0">"ui_ext"</span>,<span class="st0">"screen_name"</span><span class="br0">)</span>
+		<span class="kw1">local</span> hp = rgd.GameData.health_ext.hitpoints
+		<span class="kw1">local</span> unique = <span class="kw1">true</span>
+		<span class="kw1">if</span> screen_name <span class="kw1">and</span> screen_name != <span class="st0">"$0"</span>
+			screen_name = UCS<span class="br0">(</span>screen_name<span class="br0">)</span>
+			unit_name = screen_name..<span class="st0">" ("</span>..unit_name..<span class="st0">")"</span>
+			<span class="kw1">if</span> unit_list<span class="br0">[</span>screen_name<span class="br0">]</span> == hp
+				unique = <span class="kw1">false</span>
+			<span class="kw1">else</span>
+				unit_list<span class="br0">[</span>screen_name<span class="br0">]</span> = hp
+			<span class="kw1">end</span>
+		<span class="kw1">end</span>
+		<span class="kw1">if</span> unique
+			pos = pos + <span class="nu0">1</span>
+			<span class="kw1">print</span><span class="br0">(</span><span class="st0">"#"</span> .. pos .. <span class="st0">": "</span> .. unit_name .. <span class="st0">" ("</span>
+			.. rgd.GameData.health_ext.hitpoints .. <span class="st0">" hp)"</span><span class="br0">)</span>
+		<span class="kw1">end</span>
+	<span class="kw1">end</span>
+<span class="kw1">end</span></pre>Output at this point is looking rather good:<pre class="text" style="color: #000066; border: 1px solid #d0d0d0; background-color: #f0f0f0;">...
+#3: Tiger Ace (races\axis\vehicles\tiger_ace.rgd) (1500 hp)
+#4: Tiger (races\axis\vehicles\tiger.rgd) (1064 hp)
+#5: Tiger Ace (races\axis\vehicles\tiger_spg_ace.rgd) (1064 hp)
+#6: M26 Pershing (races\allies\vehicles\m26_pershing.rgd) (990 hp)
+...</pre></div>
+
+<h3>Giving equal places equal numbers</h3>
+<div>You may have noticed that the top few results have the same HP value, but different numbers at the start. To finish, let's fix this by remembering the HP value of the previous unit and only incrementing the pos variable if this unit's HP is different:<pre class="lua" style="color: #000066; border: 1px solid #d0d0d0; background-color: #f0f0f0;"><span class="kw1">function</span> at_end<span class="br0">(</span><span class="br0">)</span>
+	unit_list:<span class="kw1">sort</span><span class="br0">(</span> <span class="br0">[</span> <span class="br0">(</span>a,b<span class="br0">)</span>
+		| a.GameData.health_ext.hitpoints
+		> b.GameData.health_ext.hitpoints
+	<span class="br0">]</span> <span class="br0">)</span>
+	<span class="kw1">local</span> pos = <span class="nu0">0</span>
+	<span class="kw1">local</span> prev_hp
+	<span class="kw1">for</span> _,rgd <span class="kw1">in</span> <span class="kw1">ipairs</span><span class="br0">(</span>unit_list<span class="br0">)</span>
+		<span class="kw1">local</span> unit_name = rgd.path:after <span class="st0">"ebps<span class="es0">\\</span>"</span>
+		screen_name = rgd.GameData:GET<span class="br0">(</span><span class="st0">"ui_ext"</span>,<span class="st0">"screen_name"</span><span class="br0">)</span>
+		<span class="kw1">local</span> hp = rgd.GameData.health_ext.hitpoints
+		<span class="kw1">local</span> unique = <span class="kw1">true</span>
+		<span class="kw1">if</span> screen_name <span class="kw1">and</span> screen_name != <span class="st0">"$0"</span>
+			screen_name = UCS<span class="br0">(</span>screen_name<span class="br0">)</span>
+			unit_name = screen_name..<span class="st0">" ("</span>..unit_name..<span class="st0">")"</span>
+			<span class="kw1">if</span> unit_list<span class="br0">[</span>screen_name<span class="br0">]</span> == hp
+				unique = <span class="kw1">false</span>
+			<span class="kw1">else</span>
+				unit_list<span class="br0">[</span>screen_name<span class="br0">]</span> = hp
+			<span class="kw1">end</span>
+		<span class="kw1">end</span>
+		<span class="kw1">if</span> unique
+			<span class="kw1">if</span> hp ~= prev_hp
+				pos = pos + <span class="nu0">1</span>
+			<span class="kw1">end</span>
+			prev_hp = hp
+			<span class="kw1">print</span><span class="br0">(</span><span class="st0">"#"</span> .. pos .. <span class="st0">": "</span> .. unit_name .. <span class="st0">" ("</span>
+			.. rgd.GameData.health_ext.hitpoints .. <span class="st0">" hp)"</span><span class="br0">)</span>
+		<span class="kw1">end</span>
+	<span class="kw1">end</span>
+<span class="kw1">end</span></pre>At this point, the report is complete.<pre class="text" style="color: #000066; border: 1px solid #d0d0d0; background-color: #f0f0f0;">...
+#35: Mortar Team (races\allies\soldiers\mortar_gunner.rgd) (55 hp)
+#35: Engineers (races\allies\soldiers\engineer.rgd) (55 hp)
+#35: Repair Engineer (races\allies\soldiers\repair_engineer.rgd) (55 hp)
+#36: Mines (races\allies\mines\allies_greyhound_drop_mine.rgd) (20 hp)</pre></div>
+
+<h3>Full macro, version 2</h3>
+<div>Here is the complete macro: (included in the mod studio macro folder as "CoH Unit List by HP.lua"<pre class="lua" style="color: #000066; border: 1px solid #d0d0d0; background-color: #f0f0f0;">unit_list = <span class="kw1">setmetatable</span><span class="br0">(</span><span class="br0">{</span><span class="br0">}</span>, <span class="br0">{</span>__index = <span class="kw1">table</span><span class="br0">}</span><span class="br0">)</span>
+campaign_file = <span class="st0">"[/_<span class="es0">\\</span>]sp[/_%.<span class="es0">\\</span>]"</span>
+ 
+<span class="kw1">function</span> each_file<span class="br0">(</span>rgd<span class="br0">)</span>
+	<span class="kw1">if</span> <span class="br0">(</span><span class="kw1">not</span> rgd.path:find<span class="br0">(</span>campaign_file<span class="br0">)</span><span class="br0">)</span> <span class="kw1">and</span>
+		rgd:GET<span class="br0">(</span><span class="st0">"GameData"</span>,<span class="st0">"health_ext"</span>,<span class="st0">"hitpoints"</span><span class="br0">)</span> <span class="kw1">then</span>
+		unit_list:insert<span class="br0">(</span>rgd<span class="br0">)</span>
+	<span class="kw1">end</span>
+<span class="kw1">end</span>
+ 
+<span class="kw1">function</span> at_end<span class="br0">(</span><span class="br0">)</span>
+	unit_list:<span class="kw1">sort</span><span class="br0">(</span> <span class="br0">[</span> <span class="br0">(</span>a,b<span class="br0">)</span>
+		| a.GameData.health_ext.hitpoints
+		> b.GameData.health_ext.hitpoints
+	<span class="br0">]</span> <span class="br0">)</span>
+	<span class="kw1">local</span> pos = <span class="nu0">0</span>
+	<span class="kw1">local</span> prev_hp
+	<span class="kw1">for</span> _,rgd <span class="kw1">in</span> <span class="kw1">ipairs</span><span class="br0">(</span>unit_list<span class="br0">)</span>
+		<span class="kw1">local</span> unit_name = rgd.path:after <span class="st0">"ebps<span class="es0">\\</span>"</span>
+		screen_name = rgd.GameData:GET<span class="br0">(</span><span class="st0">"ui_ext"</span>,<span class="st0">"screen_name"</span><span class="br0">)</span>
+		<span class="kw1">local</span> hp = rgd.GameData.health_ext.hitpoints
+		<span class="kw1">local</span> unique = <span class="kw1">true</span>
+		<span class="kw1">if</span> screen_name <span class="kw1">and</span> screen_name != <span class="st0">"$0"</span>
+			screen_name = UCS<span class="br0">(</span>screen_name<span class="br0">)</span>
+			unit_name = screen_name..<span class="st0">" ("</span>..unit_name..<span class="st0">")"</span>
+			<span class="kw1">if</span> unit_list<span class="br0">[</span>screen_name<span class="br0">]</span> == hp
+				unique = <span class="kw1">false</span>
+			<span class="kw1">else</span>
+				unit_list<span class="br0">[</span>screen_name<span class="br0">]</span> = hp
+			<span class="kw1">end</span>
+		<span class="kw1">end</span>
+		<span class="kw1">if</span> unique
+			<span class="kw1">if</span> hp ~= prev_hp
+				pos = pos + <span class="nu0">1</span>
+			<span class="kw1">end</span>
+			prev_hp = hp
+			<span class="kw1">print</span><span class="br0">(</span><span class="st0">"#"</span> .. pos .. <span class="st0">": "</span> .. unit_name .. <span class="st0">" ("</span>
+			.. rgd.GameData.health_ext.hitpoints .. <span class="st0">" hp)"</span><span class="br0">)</span>
+		<span class="kw1">end</span>
+	<span class="kw1">end</span>
+<span class="kw1">end</span></pre><br/>
+<a href="tutorials-4.html">Back to tutorial list</a></div>
+
+					<div id="disclaimer">This documentation is provided under the GNU General Public License. All trademarks / copyrights are tm/r/c their respective owners. 					</div>
+				</div>
+			</div>
+		</div>
+	</body>
+</html>

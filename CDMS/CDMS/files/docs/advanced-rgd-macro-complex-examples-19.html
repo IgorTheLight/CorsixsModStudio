@@ -1,0 +1,155 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+	<head>
+		<title>Corsix's Mod Studio - Advanced - RGD Macro Complex Examples</title>
+		<meta http-equiv="Pragma" content="no-cache" />
+		<meta http-equiv="Expires" content="-1" />
+		<meta http-equiv="Cache-Control" content="no-cache" />
+		<link rel="stylesheet" type="text/css" href="conspiracy.css" />
+			</head>
+	<body>
+		<div id="layout_wrap">
+			<div id="content_wrap">
+				<div id="content_head">
+					<a href="general-1.html">
+						<img src="trans.gif" alt="Corsix's DoW and CoH Mod Studio"/>
+					</a>
+				</div>
+				<div id="content_menu">
+					<ul>
+						<li><a href="general-1.html">General</a></li>
+						<li><a href="usage-guide-2.html">Usage Guide</a></li>
+						<li><a href="tutorials-4.html">Tutorials</a></li>
+						<li><a href="advanced-3.html">Advanced</a></li>
+						<li><a href="downloads-5.html">Downloads</a></li>
+					</ul>
+				</div>
+				<div id="no_css">
+					It looks like you're using a browser that does not support CSS - why don't you upgrade to a totally free new browser like <a href="http://www.mozilla.com/firefox/">Firefox</a>?
+				</div>
+				<div id="content_main">
+					<h3>loadRgd and error handling</h3>
+<div>You can use <code>pcall</code> to catch any errors coming out of functions like <code>loadRgd</code>, like so:<pre class="lua" style="color: #000066; border: 1px solid #d0d0d0; background-color: #f0f0f0;"><span class="kw1">function</span> at_end<span class="br0">(</span><span class="br0">)</span>
+	loaded,rgd = <span class="kw1">pcall</span><span class="br0">(</span>loadRgd,
+		<span class="br0">[</span><span class="br0">[</span>attrib\attrib\bags\ability_bag.rgd<span class="br0">]</span><span class="br0">]</span>
+		<span class="br0">)</span>
+	<span class="kw1">if</span> loaded <span class="kw1">and</span> rgd
+		<span class="co1">-- rgd was loaded</span>
+		<span class="kw1">for</span> k <span class="kw1">in</span> rgd.GameData <span class="kw1">do</span> <span class="kw1">print</span><span class="br0">(</span>k<span class="br0">)</span> <span class="kw1">end</span>
+	<span class="kw1">else</span>
+		<span class="kw1">if</span> rgd
+			<span class="co1">-- rgd is the error message</span>
+			<span class="kw1">print</span><span class="br0">(</span><span class="st0">"Error: Cannot load RGD. Stack trace:<span class="es0">\n</span>"</span>
+				.. rgd<span class="br0">)</span>
+		<span class="kw1">else</span>
+			<span class="co1">-- permission denied to load rgds</span>
+			<span class="kw1">print</span> <span class="st0">"Error: Not permitted to load RGD"</span>
+		<span class="kw1">end</span>
+	<span class="kw1">end</span>
+<span class="kw1">end</span></pre>
+
+You can also use <code>xpcall</code> to get an extended stack trace:
+<pre class="lua" style="color: #000066; border: 1px solid #d0d0d0; background-color: #f0f0f0;"><span class="kw1">function</span> error_handler<span class="br0">(</span>e<span class="br0">)</span>
+	<span class="kw1">local</span> trace = <span class="kw1">debug</span>.traceback<span class="br0">(</span><span class="br0">)</span>
+	<span class="kw1">if</span> <span class="kw1">not</span> trace | e <span class="kw1">end</span>
+	trace_parts = trace:split <span class="st0">"<span class="es0">\n</span>"</span>
+	trace = <span class="st0">""</span>
+	<span class="kw1">for</span> n = #trace_parts, <span class="nu0">2</span>, <span class="nu0">-1</span>
+		trace = trace .. trace_parts<span class="br0">[</span>n<span class="br0">]</span>:after<span class="st0">"<span class="es0">\t</span>"</span> .. <span class="st0">"<span class="es0">\n</span>"</span>
+	<span class="kw1">end</span>
+	trace_parts = e:split<span class="st0">"<span class="es0">\r</span><span class="es0">\n</span>"</span>
+	<span class="kw1">for</span> _,part <span class="kw1">in</span> <span class="kw1">ipairs</span><span class="br0">(</span>trace_parts<span class="br0">)</span>
+	  <span class="kw1">if</span> part ~= <span class="st0">""</span>
+		trace = trace .. <span class="st0">"["</span> .. part:before<span class="st0">" line "</span> ..
+		<span class="st0">"]:"</span> .. part:after<span class="st0">" line "</span>:before<span class="st0">": "</span> ..
+		<span class="st0">": "</span> .. part:after<span class="st0">": "</span> .. <span class="st0">"<span class="es0">\n</span>"</span>
+	  <span class="kw1">end</span>
+	<span class="kw1">end</span>
+	<span class="kw1">return</span> trace
+<span class="kw1">end</span>
+ 
+<span class="kw1">function</span> at_end<span class="br0">(</span><span class="br0">)</span>
+	loaded,rgd = <span class="kw1">xpcall</span><span class="br0">(</span><span class="br0">[</span>| loadRgd<span class="br0">(</span>
+		<span class="br0">[</span><span class="br0">[</span>attrib\attrib\bags\ability_bag.rgd<span class="br0">]</span><span class="br0">]</span>
+		<span class="br0">)</span><span class="br0">]</span> , error_handler<span class="br0">)</span>
+	<span class="kw1">if</span> loaded <span class="kw1">and</span> rgd
+		<span class="co1">-- rgd was loaded</span>
+		<span class="kw1">for</span> k <span class="kw1">in</span> rgd.GameData <span class="kw1">do</span> <span class="kw1">print</span><span class="br0">(</span>k<span class="br0">)</span> <span class="kw1">end</span>
+	<span class="kw1">else</span>
+		<span class="kw1">if</span> rgd
+			<span class="co1">-- rgd is the error message</span>
+			<span class="kw1">print</span><span class="br0">(</span><span class="st0">"Error: Cannot load RGD. Stack trace:<span class="es0">\n</span>"</span>
+				.. rgd<span class="br0">)</span>
+		<span class="kw1">else</span>
+			<span class="co1">-- permission denied to load rgds</span>
+			<span class="kw1">print</span> <span class="st0">"Error: Not permitted to load RGD"</span>
+		<span class="kw1">end</span>
+	<span class="kw1">end</span>
+<span class="kw1">end</span>
+ </pre></div>
+
+<h3>Access to more than one folder</h3>
+<div>If you want your macro to work over more than one folder, then you can run it over the main attrib folder and use some magic to access the bits you want. If you place this at the top of your script then you can do all your hard work inside the at_end function.<pre class="lua" style="color: #000066; border: 1px solid #d0d0d0; background-color: #f0f0f0;"><span class="kw1">function</span> each_file<span class="br0">(</span>rgd<span class="br0">)</span>
+	<span class="kw1">local</span> map_part = <span class="kw1">_G</span>
+	<span class="kw1">local</span> key = <span class="st0">"filemap"</span>
+	<span class="kw1">for</span> _,part <span class="kw1">in</span> <span class="kw1">ipairs</span><span class="br0">(</span>rgd.path:lower<span class="br0">(</span><span class="br0">)</span>:after<span class="st0">"<span class="es0">\\</span>attrib<span class="es0">\\</span>"</span>
+	:split<span class="st0">"<span class="es0">\\</span>"</span><span class="br0">)</span>
+		map_part = map_part<span class="br0">[</span>key<span class="br0">]</span>
+		key = part
+	<span class="kw1">end</span>
+	map_part<span class="br0">[</span>key<span class="br0">]</span> = rgd
+<span class="kw1">end</span>
+ 
+<span class="kw1">function</span> filemap_autotable<span class="br0">(</span>t,k<span class="br0">)</span>
+	<span class="kw1">if</span> filemap_autotable
+		t<span class="br0">[</span>k<span class="br0">]</span> = <span class="kw1">setmetatable</span><span class="br0">(</span><span class="br0">{</span><span class="br0">}</span>, <span class="br0">{</span>__index = filemap_autotable<span class="br0">}</span><span class="br0">)</span>
+		<span class="kw1">return</span> t<span class="br0">[</span>k<span class="br0">]</span>
+	<span class="kw1">end</span>
+<span class="kw1">end</span>
+filemap_autotable<span class="br0">(</span><span class="kw1">_G</span>, <span class="st0">"filemap"</span><span class="br0">)</span>
+ 
+<span class="kw1">function</span> filemap_folder<span class="br0">(</span>path<span class="br0">)</span>
+	<span class="kw1">local</span> map_part = filemap
+	<span class="kw1">for</span> k,part <span class="kw1">in</span> <span class="kw1">ipairs</span><span class="br0">(</span>path:lower<span class="br0">(</span><span class="br0">)</span>:split<span class="st0">"[/<span class="es0">\\</span>]"</span><span class="br0">)</span>
+		map_part = map_part<span class="br0">[</span>part<span class="br0">]</span>
+	<span class="kw1">end</span>
+	<span class="kw1">return</span> map_part
+<span class="kw1">end</span>
+ 
+<span class="kw1">function</span> pairs_recursive<span class="br0">(</span>t<span class="br0">)</span>
+	| <span class="br0">[</span> <span class="br0">(</span>state, v1<span class="br0">)</span>
+		<span class="kw1">local</span> k,v = <span class="kw1">next</span><span class="br0">(</span>state<span class="br0">[</span>#state<span class="br0">]</span>, v1<span class="br0">)</span>
+		<span class="kw1">local</span> f = <span class="br0">[</span>
+		<span class="kw1">if</span> <span class="kw1">type</span><span class="br0">(</span>v<span class="br0">)</span> == <span class="st0">"table"</span>
+			state<span class="br0">[</span>#state<span class="br0">]</span> = <span class="br0">{</span>state<span class="br0">[</span>#state<span class="br0">]</span>, k<span class="br0">}</span>
+			state<span class="br0">[</span><span class="nu0">1</span>+#state<span class="br0">]</span> = v
+			k,v = <span class="kw1">next</span><span class="br0">(</span>state<span class="br0">[</span>#state<span class="br0">]</span><span class="br0">)</span>
+			| <span class="nu0">1</span>
+		<span class="kw1">elseif</span> <span class="kw1">type</span><span class="br0">(</span>v<span class="br0">)</span> == <span class="st0">"nil"</span>
+			state<span class="br0">[</span>#state<span class="br0">]</span> = <span class="kw1">nil</span>
+			<span class="kw1">if</span> <span class="kw1">not</span> state<span class="br0">[</span>#state<span class="br0">]</span> | <span class="kw1">nil</span> <span class="kw1">end</span>
+			v1 = state<span class="br0">[</span>#state<span class="br0">]</span><span class="br0">[</span><span class="nu0">2</span><span class="br0">]</span>
+			state<span class="br0">[</span>#state<span class="br0">]</span> = state<span class="br0">[</span>#state<span class="br0">]</span><span class="br0">[</span><span class="nu0">1</span><span class="br0">]</span>
+			k,v = <span class="kw1">next</span><span class="br0">(</span>state<span class="br0">[</span>#state<span class="br0">]</span>, v1<span class="br0">)</span>
+			| <span class="nu0">1</span>
+		<span class="kw1">end</span> <span class="br0">]</span>
+		<span class="kw1">while</span> f<span class="br0">(</span><span class="br0">)</span> <span class="kw1">end</span>
+		| k,v
+	<span class="br0">]</span>, <span class="br0">{</span>t<span class="br0">}</span>
+<span class="kw1">end</span></pre>The at_end function then looks something like this:<pre class="lua" style="color: #000066; border: 1px solid #d0d0d0; background-color: #f0f0f0;"><span class="kw1">function</span> at_end<span class="br0">(</span><span class="br0">)</span>
+	<span class="kw1">for</span> filename,rgd <span class="kw1">in</span> pairs_recursive<span class="br0">(</span>filemap.racebps<span class="br0">)</span> <span class="kw1">do</span>
+		<span class="co1">-- do something with RaceBPs RGDs</span>
+	<span class="kw1">end</span>
+ 
+	<span class="kw1">for</span> filename,rgd <span class="kw1">in</span> pairs_recursive<span class="br0">(</span>filemap.ebps.races<span class="br0">)</span> <span class="kw1">do</span>
+		<span class="co1">-- do something with EBPS RGDs</span>
+	<span class="kw1">end</span>
+<span class="kw1">end</span></pre>The DoW DPS macro that comes with mod studio uses this method to great effect.<br/><br/>
+<a href="advanced-3.html">Back to advanced topics list</a></div>
+
+					<div id="disclaimer">This documentation is provided under the GNU General Public License. All trademarks / copyrights are tm/r/c their respective owners. 					</div>
+				</div>
+			</div>
+		</div>
+	</body>
+</html>

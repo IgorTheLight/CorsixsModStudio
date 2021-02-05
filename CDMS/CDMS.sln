@@ -1,0 +1,32 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 9.00
+# Visual Studio 2005
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CDMS", "CDMS\CDMS.vcproj", "{77CF35DE-F3A9-4A32-8B9C-ECC6E5CFCCAB}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Rainman", "Rainman\Rainman.vcproj", "{72FC15E5-6285-4A25-95B6-BDBEDC8B1070}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "zlib", "zlib\zlib.vcproj", "{CFA9F764-51ED-4519-9951-E93BE6D69621}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{77CF35DE-F3A9-4A32-8B9C-ECC6E5CFCCAB}.Debug|Win32.ActiveCfg = Debug|Win32
+		{77CF35DE-F3A9-4A32-8B9C-ECC6E5CFCCAB}.Debug|Win32.Build.0 = Debug|Win32
+		{77CF35DE-F3A9-4A32-8B9C-ECC6E5CFCCAB}.Release|Win32.ActiveCfg = Release|Win32
+		{77CF35DE-F3A9-4A32-8B9C-ECC6E5CFCCAB}.Release|Win32.Build.0 = Release|Win32
+		{72FC15E5-6285-4A25-95B6-BDBEDC8B1070}.Debug|Win32.ActiveCfg = Debug|Win32
+		{72FC15E5-6285-4A25-95B6-BDBEDC8B1070}.Debug|Win32.Build.0 = Debug|Win32
+		{72FC15E5-6285-4A25-95B6-BDBEDC8B1070}.Release|Win32.ActiveCfg = Release|Win32
+		{72FC15E5-6285-4A25-95B6-BDBEDC8B1070}.Release|Win32.Build.0 = Release|Win32
+		{CFA9F764-51ED-4519-9951-E93BE6D69621}.Debug|Win32.ActiveCfg = Debug|Win32
+		{CFA9F764-51ED-4519-9951-E93BE6D69621}.Debug|Win32.Build.0 = Debug|Win32
+		{CFA9F764-51ED-4519-9951-E93BE6D69621}.Release|Win32.ActiveCfg = Release|Win32
+		{CFA9F764-51ED-4519-9951-E93BE6D69621}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

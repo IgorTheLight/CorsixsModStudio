@@ -1,0 +1,217 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+	<head>
+		<title>Corsix's Mod Studio - Advanced - RGD Macro Language Reference</title>
+		<meta http-equiv="Pragma" content="no-cache" />
+		<meta http-equiv="Expires" content="-1" />
+		<meta http-equiv="Cache-Control" content="no-cache" />
+		<link rel="stylesheet" type="text/css" href="conspiracy.css" />
+			</head>
+	<body>
+		<div id="layout_wrap">
+			<div id="content_wrap">
+				<div id="content_head">
+					<a href="general-1.html">
+						<img src="trans.gif" alt="Corsix's DoW and CoH Mod Studio"/>
+					</a>
+				</div>
+				<div id="content_menu">
+					<ul>
+						<li><a href="general-1.html">General</a></li>
+						<li><a href="usage-guide-2.html">Usage Guide</a></li>
+						<li><a href="tutorials-4.html">Tutorials</a></li>
+						<li><a href="advanced-3.html">Advanced</a></li>
+						<li><a href="downloads-5.html">Downloads</a></li>
+					</ul>
+				</div>
+				<div id="no_css">
+					It looks like you're using a browser that does not support CSS - why don't you upgrade to a totally free new browser like <a href="http://www.mozilla.com/firefox/">Firefox</a>?
+				</div>
+				<div id="content_main">
+					<h3>Language Core</h3>
+<div>The core language (eg. syntax, behavior, semantics) is Lua 5.1. This is covered in great detail in <a href="http://www.lua.org/manual/5.1/manual.html#2">section 2 of the Lua 5.1 manual</a>. Some changes are made to the core language though:
+<ul>
+<li><code>then</code> is optional in <code>if</code> statements</li>
+<li><code>do</code> is optional in <code>for</code> or <code>while</code> loops</li>
+<li><code>!=</code> behaves just like <code>~=</code> (either can be used)</li>
+<li>Generic <code>for</code> loops can iterate over tables, as in Lua 5.0</li>
+<li>The pipe character (<code>|</code>) is shorthand for <code>return</code></li>
+<li>Anonymous functions can be defined in a shorthand manner (<a href="http://svn.codekitchen.net/lua_patches/lambda.readme.txt">details</a>)
+<li>The metatable event "__updateindex" is the compliment of "__newindex" and is called when setting a value to a key in a table when the key already exists in the table.</li>
+</ul></div>
+
+<h3>Standard Library - Basic Functions</h3>
+<div>The basic functions from the standard library are the same <a href="http://www.lua.org/manual/5.1/manual.html#5.1">as in Lua 5.1</a>, with the following changes:<br/>
+<pre>next (table [[, ...], index])</pre>The table argument can be an RGD file object or an RGD table object, at which point the 'children' member of the object is used as the table
+<pre>pairs (table)</pre>The table argument can be an RGD file object or an RGD table object
+<pre>print ([e1 [, e2 [, ...]]])</pre>Each argument is converted to a string and then written to output window, then a line break is written after the last argument
+<pre>type (v)</pre> Returns "userdata" for RGD file objects and RGD table objects</div>
+
+<h3>Standard Library - Coroutine Manipulation</h3>
+<div>The coroutine manipulation sub-library of the standard library is the same <a href="http://www.lua.org/manual/5.1/manual.html#5.2">as in Lua 5.1</a>, with no changes.</div>
+
+<h3>Standard Library - String Manipulation</h3>
+<div>The string manipulation sub-library of the standard library is the same <a href="http://www.lua.org/manual/5.1/manual.html#5.4">as in Lua 5.1</a>, with the following additions:
+
+<pre>string.split(s [, delimiter [, plain]])</pre>Splits up <code>s</code> into segments using the string.find function (eg. <code>delimiter</code> is a pattern unless plain is given and a true value). Returns a table with the first substring at <code>t[1]</code> and the last substring at <code>t[n]</code>. <code>Delimiter</code> defaults to " " if not given, thereby splitting the string into words. If <code>plain</code> is true, then <code>string.split</code> is the reverse of <code>table.concat</code>.
+
+<pre>string.after(s, needle)</pre>Returns the substring of <code>s</code> after the first occurance of <code>needle</code> (does not use pattern matching). Returns an empty string if <code>needle</code> is not found.
+
+<pre>string.afterlast(s, needle)</pre>Returns the substring of <code>s</code> after the last occurance of <code>needle</code> (does not use pattern matching). Returns <code>s</code> if <code>needle</code> is not found.
+
+<pre>string.before(s, needle)</pre>Returns the substring of <code>s</code> before the first occurance of <code>needle</code> (does not use pattern matching). Returns <code>s</code> if <code>needle</code> is not found.
+
+<pre>string.beforelast(s, needle)</pre>Returns the substring of <code>s</code> before the last occurance of <code>needle</code> (does not use pattern matching). Returns an empty string if <code>needle</code> is not found.
+
+<pre>string.formatself(s, format [, ...])</pre>Equivalent to <code>string.format(format, s, ...)</code>, useful when using a string in an object oriented manner.</div>
+
+<h3>Standard Library - Table Manipulation</h3>
+<div>The table manipulation sub-library of the standard library is the same <a href="http://www.lua.org/manual/5.1/manual.html#5.5">as in Lua 5.1</a>, but be aware of the following:<br/>
+RGD file objects and RGD table objects are classed as "userdata" rather than "table". Therefore nothing in the table library will work on RGD file objects or RGD table objects. Even if they did, most of the table library works on tables as arrays, and RGD table objects can only have string keys, not number keys. RGD file objects can only contain "GameData" as a key, so the table library would be of little use here too.<br/>
+There are also the following additions:<br/>
+<pre>table([t])</pre>
+Equivalent to <code>setmetatable(t or {},{__index=table})</code>. Returns either <code>t</code> or a new empty table, with a metatable that points to the <code>table</code> table, so that the resulting table can be used in an object oriented manner.
+
+<pre>table.filter(t, f)</pre>For each key/value pair in <code>t</code> (which can be a table, or an RGD table object), <code>f(key, value)</code> is called. If a value of false is returned, then that key/value pair is erased from <code>t</code>. <code>filter</code> returns <code>t</code>.</div>
+
+<h3>Standard Library - Mathematical Functions</h3>
+<div>The mathematical functions from the standard library are the same <a href="http://www.lua.org/manual/5.1/manual.html#5.6">as in Lua 5.1</a>, with the following additions: (all integer variables can be used in an object oriented way: <code>n:clamp(x,y)</code> is the same as <code>math.clamp(n,x,y)</code>)
+<pre>math.clamp(n [, lower [, upper]])</pre>Clamps <code>n</code> into the range <code>lower</code> to <code>upper</code>. Equivalent to:<br/><code>
+if upper and n > upper then return upper end<br/>
+if lower and n < lower then return lower end<br/>
+return n<br/></code>
+
+<pre>math.formatself(n, format [, ...])</pre>Equivalent to <code>string.format(format, n, ...)</code>, useful when using a number in an object oriented manner.</div>
+
+<h3>Standard Library - Input and Output Facilities</h3>
+<div>The input and output facilities of the standard library are the same <a href="http://www.lua.org/manual/5.1/manual.html#5.7">as in Lua 5.1</a>, with the following changes:
+<pre>io.stdin
+io.stdout
+io.stderr</pre>These are not available.
+<pre>io.close ([file])
+io.flush ()
+io.input ([file])
+io.lines ([filename])
+io.open (filename [, mode])
+io.output ([file])
+io.popen (prog [, mode])
+io.read (format1, ...)
+io.tmpfile ()
+io.type (obj)
+io.write (value1, ...)</pre>
+Each of these functions is security protected. Whenever one is called, if the user has not given permission for the IO library to be used, then the user is asked to give or withhold permission. If permission is not given, then the function returns nil. Once the user has given permission for the IO library to be used, then all of the functions can be used without permission being needed again.</div>
+
+<h3>Standard Library - Operating System Facilities</h3>
+<div>The operating system facilities of the standard library are the same <a href="http://www.lua.org/manual/5.1/manual.html#5.8">as in Lua 5.1</a>, with the following changes:
+<pre>os.clock ()
+os.date ([format [, time]])
+os.difftime (t2, t1)
+os.execute (command)
+os.exit ([code])
+os.getenv (varname)
+os.remove (filename)
+os.rename (oldname, newname)
+os.setlocale (locale [, category])
+os.time ([table])
+os.tmpname ()</pre>Each of these functions is security protected. Whenever one is called, if the user has not given permission for the OS library to be used, then the user is asked to give or withhold permission. If permission is not given, then the function returns nil. Once the user has given permission for the OS library to be used, then all of the functions can be used without permission being needed again.</div>
+
+<h3>Standard Library - The Reflexive Debug Interface</h3>
+<div>The reflexive debug interface of the standard library are the same <a href="http://www.lua.org/manual/5.1/manual.html#5.9">as in Lua 5.1</a>, with the following changes:
+<pre>debug.debug ()</pre>This function is not available.
+<pre>debug.getfenv (o)
+debug.gethook ([thread])
+debug.getinfo ([thread,] function [, what])
+debug.getlocal ([thread,] level, local)
+debug.getmetatable (object)
+debug.getregistry ()
+debug.getupvalue (func, up)
+debug.setfenv (object, table)
+debug.sethook ([thread,] hook, mask [, count])
+debug.setlocal (level, local, value)
+debug.setmetatable (object, table)
+debug.setupvalue (func, up, value)</pre>Each of these functions is security protected. Whenever one is called, if the user has not given permission for the debug library to be used, then the user is asked to give or withhold permission. If permission is not given, then the function returns nil. Once the user has given permission for the debug library to be used, then all of the functions can be used without permission being needed again.</div>
+
+<h3>RGD Library - Basic Functions</h3>
+<div><pre>each_file(rgd)</pre>
+If this function is provided by the macro, then it is called for each RGD in the folder (and sub-folders) that the macro is being run over. <code>rgd</code> is an RGD file object
+
+<pre>at_end()</pre>
+If this function is provided by the macro, then it is called after <code>each_file</code> has been called for each RGD
+
+<pre>UCS(v)</pre>
+If <code>v</code> is a string of the form "$1234" (eg. matching the lua pattern "^$[0-9]*$") or <code>v</code> is a number, then the return value is the equivalent value from the loaded UCS files, or "$1234 no key" if not found. Note that as lua uses ASCII strings, characters outside the ASCII character set will not be neatly converted to ASCII. If <code>v</code> is not a number and not a string of UCS form, then <code>v</code> is the return value.
+
+<pre>loadRgd(filepath)</pre>
+Loads the specified file and returns an RGD file object. <code>filepath</code> should be a full path (eg. "attrib\attrib\ebps\file.rgd" or "data\attrib\ebps\file.rgd") using backslashes and not using forward slashes nor "." nor "..". For example:<br/><code>
+rgd = loadRgd("attrib\\attrib\\ebps\\filename.rgd")<br/>
+rgd = loadRgd([[data\attrib\racebps\filename.rgd]])</code><br/>
+If filepath is outside of the folder that the macro is being run over, and the user has not given permission for files outside the folder to be loaded, then the user will be asked to give or withhold permission. If permission is not given, then nil is returned. If the specified file cannot be loaded, then an error is generated, causing control flow to jump to where the application called the macro, or the most recent <code>pcall</code>.</div>
+
+<h3>RGD Library - RGD file objects</h3>
+<div><pre>rgd.name</pre>
+The filename of the rgd (eg. "allies.rgd"). This value is read-only
+
+<pre>rgd.path</pre>
+The filepath of the rgd (eg. "attrib\attrib\racebps\allies.rgd"). This value is read-only
+
+<pre>rgd:save()</pre>
+Equivalent to <code>rgd:saveAs(rgd.path)</code>
+
+<pre>rgd:saveAs(filepath)</pre>
+Saves the RGD to the specified location. <code>filepath</code> should be a full path (eg. "attrib\attrib\ebps\file.rgd" or "data\attrib\ebps\file.rgd") using backslashes and not using forward slashes nor "." nor "..". If filepath is outside of the folder that the macro is being run over, and the user has not given permission for files to be saved to outside the folder, then the user will be asked to give or withhold permission. If permission is not given, then nil is returned. If the specified file cannot be saved to, then an error is generated, causing control flow to jump to where the application called the macro, or the most recent pcall.
+
+<pre>rgd.GameData</pre>
+The GameData table of the rgd file. Note that the RGD is not actually loaded from disk until the value of <code>rgd.GameData</code> is actually needed. This value is an RGD table object rather than a lua table
+
+<pre>rgd.children</pre>
+Equivalent to <code>{GameData = rgd.GameData}</code>
+
+<pre>rgd:GET(a1 [, a2 [, ...]])</pre>
+Returns the value of <code>rgd[a1][a2]...[an]</code> or nil if it doesn't exist. Note that <code>a1</code> must be "GameData". Nearly equivalent to:<br/><code>rgd[a1] and rgd[a1][a2] ... and rgd[a1][a2]...[an]</code>
+
+<pre>rgd:SET(a1 [, a2 [, ...]], v)</pre>
+Sets <code>rgd[a1][a2]...[an]</code> to <code>v</code>. Note that <code>a1</code> must be "GameData". Nearly equivalent to:<br/><code>rgd:GET(a1,a2,...) and rgd[a1][a2]...[an] = v</code>
+
+<pre>rgd([key])</pre>
+Equivalent to <code>next(rgd.children, key)</code>, thus allowing an RGD file object to be used in a generic <code>for</code> statement, like so:<br/>
+<code>for k,v in rgd do print(k .. " = " .. v) end</code></div>
+
+<h3>RGD Library - RGD table objects</h3>
+<div><pre>t["$REF"]</pre>
+The reference of the table (a string if present; nil otherwise)
+
+<pre>t.children</pre>
+A lua table containing the children of the table object in form <code>{k1 = t[k1], k2 = t[k2] ... kn = t[kn]}</code>. Note that if the table object has a reference, then "$REF" is included in this lua table.
+
+<pre>t["key"]
+t.key</pre>The value of the specified key in the table. Values are mapped like so:<br/>
+string values => "value"<br/>
+numeric values => 3.14159<br/>
+boolean values => true / false<br/>
+DoW UCS reference => "$12345"<br/>
+CoH UCS reference => "$12345"<br/>
+sub-table values => RGD table object<br/>
+Keys may only be strings; use t["1"] rather than t[1].
+
+<pre>t["key"] = v
+t.key = v</pre>Copies <code>v</code> into <code>t.key</code>. This means that when <code>v</code> is a lua table or RGD table object, then the contents of <code>v</code> are copied into <code>t.key</code> rather than a reference to <code>v</code>
+
+<pre>t:GET(a1 [, a2 [, ...]])</pre>
+Returns <code>t[a1][a2]...[an]</code> if present, or nil if it doesn't exist. Nearly equivalent to:<br/>
+<code>t[a1] and t[a1][a2] ... and t[a1][a2]...[an]</code>
+
+<pre>t:SET([a1 [, a2 [, ...]] ,] v)</pre>
+Sets <code>t[a1][a2]...[an]</code> to <code>v</code>. If <code>v</code> is the only argument, then it must be a lua table or an RGD table object, at which point the contents of <code>v</code> are copied into <code>t</code>.
+
+<pre>t([key])</pre>
+Equivalent to <code>next(t.children, key)</code>, thus allowing an RGD table object to be used in a generic <code>for</code> statement, like so:<br/>
+<code>for k,v in t do print(k .. " = " .. v) end</code>
+<br/><br/>
+<a href="advanced-3.html">Back to advanced topics list</a></div>
+
+					<div id="disclaimer">This documentation is provided under the GNU General Public License. All trademarks / copyrights are tm/r/c their respective owners. 					</div>
+				</div>
+			</div>
+		</div>
+	</body>
+</html>

@@ -1,0 +1,183 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// Neutral resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_NEU)
+#ifdef _WIN32
+LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
+#pragma code_page(1252)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Bitmap
+//
+
+RIDB_LOADING            BITMAP                  "logo_smaller.bmp"
+#endif    // Neutral resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.S.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif //_WIN32
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+#endif    // English (U.S.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.K.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENG)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_UK
+#pragma code_page(1252)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Bitmap
+//
+
+IDB_FILEAI              BITMAP                  "file_ai.bmp"
+IDB_FILELUA             BITMAP                  "file_lua.bmp"
+IDB_FILENIL             BITMAP                  "file_nil.bmp"
+IDB_FILERGD             BITMAP                  "file_rgd.bmp"
+IDB_FOLDERCLOSE         BITMAP                  "folder_close.bmp"
+IDB_FOLDEROPEN          BITMAP                  "folder_open.bmp"
+IDB_TOOL_LOC            BITMAP                  "tool_locilization.bmp"
+IDB_TOOL_UCS            BITMAP                  "tool_ucsedit.bmp"
+IDB_TOOL_XML            BITMAP                  "tool_xmlexport.bmp"
+IDB_SNAPSHOT            BITMAP                  "tool_snapshot.bmp"
+IDB_FILESCAR            BITMAP                  "file_scar.bmp"
+IDB_SGAPACK             BITMAP                  "tool_sgapack.bmp"
+IDB_TOOL_EXTALL         BITMAP                  "tool_extractall.bmp"
+IDB_DONATE              BITMAP                  "donate.bmp"
+IDB_REDBUTTON           BITMAP                  "red_button.bmp"
+IDB_TOC                 BITMAP                  "folder_toc.bmp"
+IDB_FILETGA             BITMAP                  "file_tga.bmp"
+IDB_FILERGT             BITMAP                  "file_rgt.bmp"
+IDB_FILEDDS             BITMAP                  "file_dds.bmp"
+IDB_FILEBFX             BITMAP                  "file_bfx.bmp"
+IDB_TOOL_CALCULATOR     BITMAP                  "tool_calculator.bmp"
+IDB_REFRESH             BITMAP                  "tool_refresh.bmp"
+IDB_FILEABP             BITMAP                  "file_abp.bmp"
+IDB_FILERGM             BITMAP                  "file_rgm.bmp"
+IDB_32SAVE              BITMAP                  "toolbar_save.bmp"
+IDB_32ADD               BITMAP                  "toolbar_add.bmp"
+IDB_32CHECK             BITMAP                  "tool_spellcheck.bmp"
+IDB_32APPLY             BITMAP                  "toolbar_apply.bmp"
+IDB_32CANCEL            BITMAP                  "toolbar_cancel.bmp"
+IDB_TOOL_AESETUP        BITMAP                  "tool_ae_setup.bmp"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDI_PLUS                ICON                    "icon1.ico"
+APPICON                 ICON                    "icon.ico"
+IDI_MINUS               ICON                    "icon2.ico"
+IDI_UP                  ICON                    "ico00001.ico"
+IDI_DOWN                ICON                    "ico00002.ico"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 0,5,5,0
+ PRODUCTVERSION 0,5,5,0
+ FILEFLAGSMASK 0x17L
+#ifdef _DEBUG
+ FILEFLAGS 0x3L
+#else
+ FILEFLAGS 0x2L
+#endif
+ FILEOS 0x4L
+ FILETYPE 0x1L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "080904b0"
+        BEGIN
+            VALUE "Comments", "Uses the Rainman library, copyright © 2005-2007 Corsix & the Rainman development team. Uses squish library copyright 2006 Simon Brown. Uses LUA libraries copyright PUC-Rio."
+            VALUE "CompanyName", "www.corsix.org"
+            VALUE "FileDescription", "Corsix's Dawn of War, Winter Assault, Dark Crusade, Soulstorm, Company of Heroes and Opposing Fronts Mod Studio"
+            VALUE "FileVersion", "0, 5, 5, 0"
+            VALUE "InternalName", "CDMS"
+            VALUE "LegalCopyright", "Licensed under the GNU GPL (see license.txt for details)"
+            VALUE "OriginalFilename", "ModStudio.exe"
+            VALUE "ProductName", "Corsix's Mod Studio"
+            VALUE "ProductVersion", "0, 5, 5, 0"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x809, 1200
+    END
+END
+
+#endif    // English (U.K.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

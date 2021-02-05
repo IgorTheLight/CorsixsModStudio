@@ -1,0 +1,53 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+	<head>
+		<title>Corsix's Mod Studio - Tutorials - Texture Editing</title>
+		<meta http-equiv="Pragma" content="no-cache" />
+		<meta http-equiv="Expires" content="-1" />
+		<meta http-equiv="Cache-Control" content="no-cache" />
+		<link rel="stylesheet" type="text/css" href="conspiracy.css" />
+			</head>
+	<body>
+		<div id="layout_wrap">
+			<div id="content_wrap">
+				<div id="content_head">
+					<a href="general-1.html">
+						<img src="trans.gif" alt="Corsix's DoW and CoH Mod Studio"/>
+					</a>
+				</div>
+				<div id="content_menu">
+					<ul>
+						<li><a href="general-1.html">General</a></li>
+						<li><a href="usage-guide-2.html">Usage Guide</a></li>
+						<li><a href="tutorials-4.html">Tutorials</a></li>
+						<li><a href="advanced-3.html">Advanced</a></li>
+						<li><a href="downloads-5.html">Downloads</a></li>
+					</ul>
+				</div>
+				<div id="no_css">
+					It looks like you're using a browser that does not support CSS - why don't you upgrade to a totally free new browser like <a href="http://www.mozilla.com/firefox/">Firefox</a>?
+				</div>
+				<div id="content_main">
+					<h3>DDS Tool</h3>
+<div>The game's textures are converted to a format called DDS. For whatever image editor you use, you'll need to make sure it can read and write DDS files. If you use Photoshop, then the best DDS plugin is available <a href="http://developer.nvidia.com/object/photoshop_dds_plugins.html">from nVidia</a>. I recommend you download and install that if you are using Photoshop.</div>
+
+<h3>Show me the textures!</h3>
+<div>The texture files can be found in data\ art\ models, and have an RGT file extension. Lets find the engineer file: data\ art\ models\ races\ allies\ soldiers\ shared_textures\ tex_al_engineer.rgt . Right click on this file and choose Dump RGT to TGA/DDS. A message will appear saying that the RGT has been converted to DDS DXT1 with mip levels - it is important to remember what kind of DDS file it is. You should end up with a DDS file that looks like this:<br/>
+<img src="images/rgt_engineer_307.jpg"/></div>
+
+<h3>Lets get editing...</h3>
+<div>If you open this DDS into Photoshop, you get a popup asking how to import the DDS. Make sure "default sizes" is selected, and "load mip maps" is unticked. Now you can apply your creative stlye:<br/>
+<img src="images/rgt_engineer_changed_307.jpg"/><br/>
+Once you're done, save the file as a DDS again. The nVidia dialog will popup again. Make sure the right texture type is selected from the dropdown ("DXT1 - RGB - No alpha" in this case). Select either Generate Mip Maps or No Mip Maps (depending on wether or not it said "with mip levels" when you converted the RGT). Press Save to finish the save process.</div>
+
+<h3>Getting it back ingame</h3>
+<div>Close Photoshop and go back to the mod studio. Right click on the engineer's DDS file and choose Convert DDS to RGT. Go to the Play menu, tick dev mode, and then choose play in CoH.<br/>
+<img src="images/rgt_engineer_ingame.jpg"/><br/><br/>
+<a href="tutorials-4.html">Back to tutorial list</a></div>
+
+					<div id="disclaimer">This documentation is provided under the GNU General Public License. All trademarks / copyrights are tm/r/c their respective owners. 					</div>
+				</div>
+			</div>
+		</div>
+	</body>
+</html>

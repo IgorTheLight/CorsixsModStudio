@@ -1,0 +1,56 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+	<head>
+		<title>Corsix's Mod Studio - Tutorials - Adding the MG team to the barracks</title>
+		<meta http-equiv="Pragma" content="no-cache" />
+		<meta http-equiv="Expires" content="-1" />
+		<meta http-equiv="Cache-Control" content="no-cache" />
+		<link rel="stylesheet" type="text/css" href="conspiracy.css" />
+			</head>
+	<body>
+		<div id="layout_wrap">
+			<div id="content_wrap">
+				<div id="content_head">
+					<a href="general-1.html">
+						<img src="trans.gif" alt="Corsix's DoW and CoH Mod Studio"/>
+					</a>
+				</div>
+				<div id="content_menu">
+					<ul>
+						<li><a href="general-1.html">General</a></li>
+						<li><a href="usage-guide-2.html">Usage Guide</a></li>
+						<li><a href="tutorials-4.html">Tutorials</a></li>
+						<li><a href="advanced-3.html">Advanced</a></li>
+						<li><a href="downloads-5.html">Downloads</a></li>
+					</ul>
+				</div>
+				<div id="no_css">
+					It looks like you're using a browser that does not support CSS - why don't you upgrade to a totally free new browser like <a href="http://www.mozilla.com/firefox/">Firefox</a>?
+				</div>
+				<div id="content_main">
+					<h3>Edit the barrack's squad list</h3>
+<div>The file for the allied barracks is attrib\ attrib\ ebps\ races\ allies\ buildings\ barracks.rgd - double click on this to launch it into the RGD editor. The barracks' squad list is found in GameData\ spawner_ext\ squad_table - click on this. You should see that squad_01 and squad_02 are set to the riflemen and jeep respectively. Ergo, we want to set squad_03 to the MG team. The file for the MG team is sbps\ races\ allies\ soldiers\ heavy_machine_gun_section.lua, so copy squad_01 into squad_03 and replace rifleman_squad.lua with heavy_machine_gun_section.lua . Press Save to save your changes.</div>
+
+<h3>UI positions</h3>
+<div><img src="images/ui_positions.jpg"/><br/>
+This is the panel which comes up ingame when you select the Weapon Support center. As you can see, the MG team is set to be in position 1. As the riflemen use position 1 in the barracks, we need to make a copy of the MG team file and set it to use position 3 instead of position 1, or else the MG team won't appear when you select the barracks.</div>
+
+<h3>Copying the MG team</h3>
+<div>In the files list, find attrib\ attrib\ sbps\ races\ allies\ soldiers\ heavy_machine_gun_section.rgd , right click on it and select extract. Open Windows Explorer, and go to YourMod\ DataAttrib\ attrib\ sbps\ races\ allies\ soldiers\ and make a copy of heavy_machine_gun_section.rgd and call it heavy_machine_gun_section_barracks.rgd . To make the tool pick up the new file, switch from the Files tab to the Tools tab and double click on the Refresh file list tool. Once this has completed, switch back to the files list.</div>
+
+<h3>Changing the UI position</h3>
+<div>Launch heavy_machine_gun_section_barracks.rgd into the RGD editor and find GameData\ squad_ui_ext\ ui_group_position . Change the value from 1 to 3. Press Save to save your changes. One last thing you need to do is go back to the barracks file and change heavy_machine_gun_section.lua to heavy_machine_gun_section_barracks.lua . Remember to press save, and then run your mod:<br/>
+<img src="images/rgd_barracks_mg.jpg"/></div>
+
+<h3>Squad requirements</h3>
+<div>Unfortunately, the MG team is set to require a weapon support center before you can build it. Reopen heavy_machine_gun_section_barracks.rgd into the RGD editor and click on GameData\ squad_requirement_ext\ requirement_table\ required_01 . On the left, you will see that the Reference for required_01 is set to requirements\ required_structure.lua . Change required_structure.lua to required_none.lua and press save.<br/>
+<img src="images/rgd_barracks_mg_making.jpg"/><br/><br/>
+<a href="files/mg_team_in_barracks.zip">Download the two changed RGD files</a><br/>
+<a href="tutorials-4.html">Back to tutorial list</a></div>
+
+					<div id="disclaimer">This documentation is provided under the GNU General Public License. All trademarks / copyrights are tm/r/c their respective owners. 					</div>
+				</div>
+			</div>
+		</div>
+	</body>
+</html>

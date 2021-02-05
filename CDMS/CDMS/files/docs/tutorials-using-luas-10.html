@@ -1,0 +1,47 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+	<head>
+		<title>Corsix's Mod Studio - Tutorials - Using LUAs instead of RGDs</title>
+		<meta http-equiv="Pragma" content="no-cache" />
+		<meta http-equiv="Expires" content="-1" />
+		<meta http-equiv="Cache-Control" content="no-cache" />
+		<link rel="stylesheet" type="text/css" href="conspiracy.css" />
+			</head>
+	<body>
+		<div id="layout_wrap">
+			<div id="content_wrap">
+				<div id="content_head">
+					<a href="general-1.html">
+						<img src="trans.gif" alt="Corsix's DoW and CoH Mod Studio"/>
+					</a>
+				</div>
+				<div id="content_menu">
+					<ul>
+						<li><a href="general-1.html">General</a></li>
+						<li><a href="usage-guide-2.html">Usage Guide</a></li>
+						<li><a href="tutorials-4.html">Tutorials</a></li>
+						<li><a href="advanced-3.html">Advanced</a></li>
+						<li><a href="downloads-5.html">Downloads</a></li>
+					</ul>
+				</div>
+				<div id="no_css">
+					It looks like you're using a browser that does not support CSS - why don't you upgrade to a totally free new browser like <a href="http://www.mozilla.com/firefox/">Firefox</a>?
+				</div>
+				<div id="content_main">
+					<h3>Obtaining the LUAs</h3>
+<div><div class="img_div"><img src="images/thumbs/import.png" border="0"/></div>To edit an RGD as a LUA, you need to convert <b>all</b> RGDs to LUAs. To do this, right click on the attrib\attrib folder and choose to dump all RGDs in the folder to LUA. This may take some time - be patient.</div>
+
+<h3>Editing LUA files</h3>
+<div><div class="img_div"><img src="images/thumbs/text_edit.png" border="0"/></div>LUA files are text files; they can be edited in any text editor. You can for example use notepad, however I prefer <a href="http://www.liquidninja.com/metapad/">metapad</a>. You should be able to work out the format of these files - each line in the file refers to a value in the RGD. However, you need to look out for Inherit() and Reference(). Changing these in an RGD has no effect, however these functions play a large role in LUAs. In essence they copy the GameData from the specified file. One non-obvious impact of this is that only values that are different from the Reference()d file are in the dumped LUA. If values are in the RGD, but appear to be missing from the LUA then it is most probably because the value is the same as in the Reference()d file, and thus not written to the LUA.</div>
+
+<h3>Converting LUAs back to RGD</h3>
+<div><div class="img_div"><img src="images/thumbs/export.png" border="0"/></div>Remember, a LUA is just an RGD saved off as a text file. The game loads RGD files, so any RGD files you've converted to LUA and then modified need to be converted back to RGD for the game to load them. You can convert LUAs back to RGD one file at a time, or an entire folder at a time by right clicking on the file or folder you want converted back.<br/>
+<br/>
+<a href="tutorials-4.html">Back to tutorial list</a></div>
+
+					<div id="disclaimer">This documentation is provided under the GNU General Public License. All trademarks / copyrights are tm/r/c their respective owners. 					</div>
+				</div>
+			</div>
+		</div>
+	</body>
+</html>

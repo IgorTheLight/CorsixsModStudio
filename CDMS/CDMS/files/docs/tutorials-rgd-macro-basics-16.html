@@ -1,0 +1,86 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+	<head>
+		<title>Corsix's Mod Studio - Tutorials - RGD Macro Basics</title>
+		<meta http-equiv="Pragma" content="no-cache" />
+		<meta http-equiv="Expires" content="-1" />
+		<meta http-equiv="Cache-Control" content="no-cache" />
+		<link rel="stylesheet" type="text/css" href="conspiracy.css" />
+			</head>
+	<body>
+		<div id="layout_wrap">
+			<div id="content_wrap">
+				<div id="content_head">
+					<a href="general-1.html">
+						<img src="trans.gif" alt="Corsix's DoW and CoH Mod Studio"/>
+					</a>
+				</div>
+				<div id="content_menu">
+					<ul>
+						<li><a href="general-1.html">General</a></li>
+						<li><a href="usage-guide-2.html">Usage Guide</a></li>
+						<li><a href="tutorials-4.html">Tutorials</a></li>
+						<li><a href="advanced-3.html">Advanced</a></li>
+						<li><a href="downloads-5.html">Downloads</a></li>
+					</ul>
+				</div>
+				<div id="no_css">
+					It looks like you're using a browser that does not support CSS - why don't you upgrade to a totally free new browser like <a href="http://www.mozilla.com/firefox/">Firefox</a>?
+				</div>
+				<div id="content_main">
+					<h3>What is an RGD macro?</h3>
+<div>An RGD macro is a script file that you can "run" over a folder. The script can then do something with each RGD file in that folder; it could make changes to each RGD, it could compile a report from various peices of RGD data, or it could do something else. Below is a macro which halves the cost of all units. To run it, load up a mod in mod studio, right click on the attrib\ebps folder and choose "Run macro over the RGDs in this folder". Copy the code into the box which appears and press "Run macro".
+<pre class="lua" style="color: #000066; border: 1px solid #d0d0d0; background-color: #f0f0f0;"><span class="kw1">function</span> each_file<span class="br0">(</span>rgd<span class="br0">)</span>
+	<span class="kw1">print</span><span class="br0">(</span><span class="st0">"Halving the cost of "</span> ..  rgd.path<span class="br0">)</span>
+	cost = rgd.GameData.cost_ext.time_cost.cost
+	<span class="kw1">for</span> value <span class="kw1">in</span> cost
+		cost<span class="br0">[</span>value<span class="br0">]</span> = cost<span class="br0">[</span>value<span class="br0">]</span> / <span class="nu0">2</span>
+	<span class="kw1">end</span>
+	rgd:save<span class="br0">(</span><span class="br0">)</span>
+<span class="kw1">end</span></pre>
+The assertive amongst you may notice that the above script looks similar to lua in terms in syntax. You would be correct; RGD macros use a modified <a href="http://www.lua.org/manual/5.1/">Lua 5.1.2</a>. If you are familiar with lua 5.1, then you may want to skip straight to the <a href="advanced-rgd-macro-language-reference-18.html">RGD macro language reference</a>. For the rest of you, here is a simpler macro:<pre class="lua" style="color: #000066; border: 1px solid #d0d0d0; background-color: #f0f0f0;"><span class="kw1">function</span> each_file<span class="br0">(</span>rgd<span class="br0">)</span>
+	rgd.GameData.health_ext.is_invincible = <span class="kw1">true</span>
+	rgd:save<span class="br0">(</span><span class="br0">)</span>
+<span class="kw1">end</span></pre>
+If you haven't guessed yet, each RGD file in the folder is passed into the each_file function. GameData and all the data within can be accessed with rgd.GameData and after you've made your changes, the rgd is saved with rgd:save() .</div>
+
+<h3>So it changes every file?</h3>
+<div>Yes, every RGD in the folder you choose (and subfolders) is passed into the function. The file path and file name of the RGD are available to the script though, so you choose to only make changes to certain files (eg, only files that have "hq" in the name):<pre class="lua" style="color: #000066; border: 1px solid #d0d0d0; background-color: #f0f0f0;"><span class="kw1">function</span> each_file<span class="br0">(</span>rgd<span class="br0">)</span>
+	<span class="kw1">if</span> rgd.name:find <span class="st0">"hq"</span>
+		rgd.GameData.health_ext.is_invincible = <span class="kw1">true</span>
+		rgd:save<span class="br0">(</span><span class="br0">)</span>
+	<span class="kw1">end</span>
+<span class="kw1">end</span></pre>Of course, Lua's <a href="http://www.lua.org/manual/5.1/manual.html#5.4.1">pattern matching</a> facility allows more complex filtering to be done via filenames: (this one only matches files called hq.rgd, hq_2.rgd to hq_6.rgd)<pre class="lua" style="color: #000066; border: 1px solid #d0d0d0; background-color: #f0f0f0;"><span class="kw1">function</span> each_file<span class="br0">(</span>rgd<span class="br0">)</span>
+	<span class="kw1">if</span> rgd.name:find <span class="st0">"^hq_?[2-6]?%.rgd$"</span> <span class="kw1">then</span>
+		rgd.GameData.health_ext.is_invincible = <span class="kw1">true</span>
+		rgd:save<span class="br0">(</span><span class="br0">)</span>
+	<span class="kw1">end</span>
+<span class="kw1">end</span></pre></div>
+
+<h3>How do I set X to Y?</h3>
+<div>Assignments are made like so:<pre class="lua" style="color: #000066; border: 1px solid #d0d0d0; background-color: #f0f0f0;">rgd.GameData.x.y = z
+rgd<span class="br0">[</span><span class="st0">"GameData"</span><span class="br0">]</span><span class="br0">[</span><span class="st0">"x"</span><span class="br0">]</span><span class="br0">[</span><span class="st0">"y"</span><span class="br0">]</span> = z</pre>You'll run into an error if GameData.x doesn't exist, so it's safer to do it like this:<pre class="lua" style="color: #000066; border: 1px solid #d0d0d0; background-color: #f0f0f0;"><span class="kw1">if</span> rgd:GET<span class="br0">(</span><span class="st0">"GameData"</span>,<span class="st0">"x"</span>,<span class="st0">"y"</span><span class="br0">)</span> <span class="kw1">then</span>
+	rgd.GameData.x.y = z
+<span class="kw1">end</span></pre>You can assign values like so:<pre class="lua" style="color: #000066; border: 1px solid #d0d0d0; background-color: #f0f0f0;">rgd.GameData.x.a = <span class="st0">"fred"</span>   <span class="co1">-- string value</span>
+rgd.GameData.x.b = <span class="nu0">3.14159</span>  <span class="co1">-- number value</span>
+rgd.GameData.x.c = <span class="kw1">false</span>    <span class="co1">-- true/false value</span>
+rgd.GameData.x.d = <span class="st0">"$75010"</span> <span class="co1">-- UCS value</span>
+rgd.GameData.x.e = <span class="kw1">nil</span>      <span class="co1">-- delete a value</span></pre>The string and number examples should be obvious. The true/false one should be as well, but remember that true and false are lowercase. The UCS one is not so obvious; UCS references are stored as a string with a dollar sign as the first character and then digits, as to differentiate them from normal numbers. The final example is a lua caveat; assigning a value of nil to something will undefine/delete that something. Here are three ways of setting a value:<pre class="lua" style="color: #000066; border: 1px solid #d0d0d0; background-color: #f0f0f0;"><span class="co1">-- 1:</span>
+rgd.GameData.x.y = z
+ 
+<span class="co1">-- 2:</span>
+var = rgd.GameData.x.y
+var = z
+ 
+<span class="co1">-- 3:</span>
+var = rgd.GameData.x
+var.y = z</pre>Only 1 and 3 work, 2 does not. Why does 2 not work? The value of GameData.x.y is stored in var, then the value of z is stored in var. The RGD table is not updated. As a rule of thumb, unless the RGD table is mentioned in the assignment, then it is not updated. Example 1 mentions the table, but example 3 needs a little bit more explaination. At first it looks like GameData.x is copied into var, then var.y is modified, so how can the RGD be updated? One caveat of lua is that tables only exist once, and that assignements do not copy them, but copy a reference to them. So in example 3, var becomes shorthand for rgd.GameData.x rather than making a copy of it. Finally, for your changes to be saved, remember to call rgd:save()
+<br/><br/>
+<a href="tutorials-4.html">Back to tutorial list</a></div>
+
+					<div id="disclaimer">This documentation is provided under the GNU General Public License. All trademarks / copyrights are tm/r/c their respective owners. 					</div>
+				</div>
+			</div>
+		</div>
+	</body>
+</html>

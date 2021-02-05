@@ -1,0 +1,49 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+	<head>
+		<title>Corsix's Mod Studio - Usage Guide - Unit Stats Editing</title>
+		<meta http-equiv="Pragma" content="no-cache" />
+		<meta http-equiv="Expires" content="-1" />
+		<meta http-equiv="Cache-Control" content="no-cache" />
+		<link rel="stylesheet" type="text/css" href="conspiracy.css" />
+			</head>
+	<body>
+		<div id="layout_wrap">
+			<div id="content_wrap">
+				<div id="content_head">
+					<a href="general-1.html">
+						<img src="trans.gif" alt="Corsix's DoW and CoH Mod Studio"/>
+					</a>
+				</div>
+				<div id="content_menu">
+					<ul>
+						<li><a href="general-1.html">General</a></li>
+						<li><a href="usage-guide-2.html">Usage Guide</a></li>
+						<li><a href="tutorials-4.html">Tutorials</a></li>
+						<li><a href="advanced-3.html">Advanced</a></li>
+						<li><a href="downloads-5.html">Downloads</a></li>
+					</ul>
+				</div>
+				<div id="no_css">
+					It looks like you're using a browser that does not support CSS - why don't you upgrade to a totally free new browser like <a href="http://www.mozilla.com/firefox/">Firefox</a>?
+				</div>
+				<div id="content_main">
+					<h3>The folders <small>Where are the unit stat files?</small></h3>
+<div><div class="img_div"><img src="images/thumbs/folder.png" border="0"/></div>Once you've loaded up your mod, the unit stat files are in the attrib\attrib folder. The racebps folder contains certain details about the allies and the axis;commander tree abilities, starting units, etc. The sbps\races folder contains information on squads; what & how many units in them, veterancy effects, etc. The ebps\races folder has information on the actual squad members; HP, which weapons they have, abilities, etc. Remember, every ingame unit is a squad: a sherman ingame is infact a sherman squad with just one unit in it.</div>
+
+<h3>Your first edit <small>5 man engineer squads? Why not?</small></h3>
+<div><div class="img_div"><img src="images/thumbs/edit.png" border="0"/></div>Find the folder attrib\ attrib\ spbs\ races\ allies\ soldiers. The file for engineers is engineer_infantry.rgd, so double click on that file to start editing it. On the left half of the screen will appear the RGD editor. You should see a tree which begins with GameData and has various squad_something_ext in it. We want to change the number of units in the squad, which is contained within squad_loadout_ext. Find and click on squad_loadout_ext\ unit_list\ unit_01. On the right of the screen you change the values within unit_01. "max" is the maximum number of units in the squad, and "num" is how many a squad begins with. Change max to 6 and num to 5. To save the changes, press the Save button in the bottom right hand side of the screen.</div>
+
+<h3>Play CoH with your changes</h3>
+<div><div class="img_div"><img src="images/thumbs/play.png" border="0"/></div>Go to the Play menu at the top of the screen, and tick "Play in dev mode". Go back to the Plat menu again, and press Play in CoH.<br/>
+<img src="images/rgd_engineer_5man.jpg"/></div>
+
+<h3>Conslusion</h3>
+<div><div class="img_div"><img src="images/thumbs/usage_guide.png" border="0"/></div>You now know the basics of modding and how to use the tool. If you want to continue some RGD editing, then tweak some values and see what happens. For guidance on how to do certain tasks (both RGD related, and non-RGD related), you can now look through the <a href="tutorials-4.html">tutorials</a>. If you are in need of help, then the Relicnews <a href="http://forums.relicnews.com/forumdisplay.php?f=189">CoH modding forum</a> is the best place to go.</div>
+
+					<div id="disclaimer">This documentation is provided under the GNU General Public License. All trademarks / copyrights are tm/r/c their respective owners. 					</div>
+				</div>
+			</div>
+		</div>
+	</body>
+</html>
