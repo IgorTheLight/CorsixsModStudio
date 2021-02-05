@@ -1,0 +1,58 @@
+Mod Studio and Rainman
+ Compile Instructions
+
+Required:
+- CDMS source (CDMS_src.zip)
+- Rainman source (Rainman_src.zip)
+- wxWidgets 2.8.0 (http://downloads.sourceforge.net/wxwindows/wxWidgets-2.8.0.zip?modtime=1165916197)
+- LUA 5.0.2 (http://www.lua.org/ftp/lua-5.0.2.tar.gz)
+- LUA 5.1.2 (http://www.lua.org/ftp/lua-5.1.2.tar.gz)
+- zLib (included in Rainman_src.zip)
+- wxPropgrid 1.2.6 (http://downloads.sourceforge.net/wxpropgrid/wxpropgrid-1.2.6-src.tar.gz?modtime=1169386064)
+- wxPropgrid hack (wxPropgrid-modifications.zip)
+- LUA hack (lua502-src_mod.zip)
+
+Instructions:
+
+* Build wxWidgets from the solution file in the wxWidgets/Build directory.
+	Use the batch build tool to build only the
+	'Debug', 'Release', 'Unicode Debug' and 'Unicode Release' configurations
+
+* Install wxPropgrid to the wxWidgets/contrib directory
+	Install the wxPropgrid hack (header files in wxWidgets/contrib/include/wx/propgrid)
+	source files in wxWidgets/contrib/src/propgrid)
+
+* Build wxPropgrid with the same configurations as you did for wxWidgets
+	(Solution file is in wxWidgets/contrib/build/propgrid)
+
+* Build wxStc with the same configurations as you did for wxWidgets
+	(Solution file is in wxWidgets/contrib/build/stc)
+
+* Build LUA 5.0.2
+	Install the hack to the LUA/src directory.
+	(Instructions for building are in the LUA/Install file)
+
+* Build LUA 5.1.2
+	(Instructions for building are in the LUA/Install file)
+
+* Build Rainman
+	Add all the .cpp , .c and .h files in the main folder and the zLib folder to a project
+	(do not add the ones in \include)
+	Set the project to compile as a Dynamically Linked Library (DLL)
+	Add the rainman\include directory to your compiler's include directory list
+	Add the LUA\include directory to your compiler's include directory list
+	Add wherever you have built the LUA libraries to the compilers additional library directories
+	Add 'lua-5.0.2.lib lua-5.0.2-std.lib shlwapi.lib' to the compilers additional librarys
+	Compile away
+
+* Build CDMS
+	Add all the .cpp , .c and .h files in the main folder
+	Set the project to compile as a Executable (EXE)
+	Add wxWidgets/include wxWidgets/lib/vc_lib/, wxWidgets/contrib/include, Rainman/src/include and wxWidgets/lib/vc_lib/msw to your compiler's include directory list
+	Add wxWidgets/lib, wxWidgets/lib/vc_lib, Rainman/libs, wxWidgets/lib/vc_dll, wxWidgets/contrib/lib and wherever you have built the LUA libraries
+	Add 'Rainman.lib wxmsw28u_stc.lib wxmsw28u_adv.lib wxmsw28u_aui.lib wxmsw28u_html.lib wxbase28u_xml.lib wxmsw28u_xrc.lib wxmsw28u_propgrid.lib wxmsw28u_core.lib wxbase28u.lib wxtiff.lib wxjpeg.lib wxpng.lib wxzlib.lib wxregexu.lib wxexpat.lib winmm.lib comctl32.lib rpcrt4.lib wsock32.lib oleacc.lib odbc32.lib lua-5.0.2.lib and lua-5.0.2-std.lib'
+	to the compilers additional librarys
+	Compile
+
+NB: Depending on which compiler you use, you may need to adjust some of the source files so it compiles.
+    EG: Adding int datatypes to constants (supported by VS2003 but not VS2005) or typecasting char* to const char* etc.
