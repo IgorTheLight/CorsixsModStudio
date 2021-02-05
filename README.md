@@ -7,7 +7,7 @@ Original sources were downloaded from here: https://modstudio.corsix.org/downloa
 * Lua 5.0.2 and wxProGrid were modified as author recommended in his "COMPILE.txt" file
 * For building Lua 5.0.2 was added a custom Visual Studio project from ... and upgraded to VS2005 version
 * For building Lua 5.1.2 was added a custom build script from ... and upgraded to VS2005 version
-* Was created a Visual Studio 2005 solution with projects for Rainman library, zlib library and Corsix's Mod Studio
+* A Visual Studio 2005 solution was created with projects for Rainman library, zlib library and Corsix's Mod Studio
 
 # What is working:
 * zlib                - WORKING
@@ -20,6 +20,6 @@ Original sources were downloaded from here: https://modstudio.corsix.org/downloa
 * Corsix's Mod Studio - FAILING
 
 # Licence
-I wasn't able to find yet any information about licencing
+I wasn't able to find any information about licencing yet
 
-# You help would be very appreciated!
+# Your help would be very appreciated!
