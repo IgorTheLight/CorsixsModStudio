@@ -10,14 +10,14 @@ Original sources were downloaded from here: https://modstudio.corsix.org/downloa
 * A Visual Studio 2005 solution was created with projects for Rainman library, zlib library and Corsix's Mod Studio
 
 # What is working:
-* zlib                - WORKING
-* Lua 5.0.2           - WORKING
-* Lua 5.1.2           - WORKING
-* wxWidgets 2.8.0     - WORKING (just 4 versions that are needed for Corsix's Mod Studio)
-* wxProGrid 1.2.6     - WORKING (just 4 versions that are needed for Corsix's Mod Studio)
-* wxStc               - FAILING
-* Rainman             - FAILING
-* Corsix's Mod Studio - FAILING
+* zlib................- WORKING
+* Lua 5.0.2...........- WORKING
+* Lua 5.1.2...........- WORKING
+* wxWidgets 2.8.0.....- WORKING (just 4 versions that are needed for Corsix's Mod Studio)
+* wxProGrid 1.2.6.....- WORKING (just 4 versions that are needed for Corsix's Mod Studio)
+* wxStc...............- FAILING
+* Rainman.............- FAILING
+* Corsix's Mod Studio.- FAILING
 
 # How to build
 Many of Corsix's Mod Studio 0.5.5 files are from 2006-2008 year so I'm using Visual Studio 2005 SP1 (with Vista patch) inside a virtual machine for more compatibility. So my setup is: Oracle VirtualBox 6.1.18 + Microsoft Windows 7 x64 SP1 Ultimate + Microsoft Visual Studio 2005 SP1 Professional (with Vista patch). I will test it on less ancient software later but for now I'm trying to get as close to original environment as possible.
