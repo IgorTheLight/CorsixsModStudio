@@ -20,20 +20,27 @@
 #include "Construct.h"
 #include "strconv.h"
 #include "CtrlStatusText.h"
+#include "Utility.h"
 #include "strings.h"
 #include <wx/notebook.h>
 #include "Common.h"
 
 BEGIN_EVENT_TABLE(frmModule, wxWindow)
 	EVT_SIZE(frmModule::OnSize)
+	EVT_BUTTON(frmModule::IDC_SaveModule, frmModule::OnSave)
+	EVT_CLOSE(frmModule::OnCloseWindow)
 END_EVENT_TABLE()
 
 BEGIN_EVENT_TABLE(frmModule::pgMain, wxWindow)
 	EVT_SIZE(frmModule::pgMain::OnSize)
+	EVT_BUTTON(frmModule::pgMain::IDC_VersionHelp, frmModule::pgMain::OnVersionHelp)
 	EVT_TEXT(IDC_Description, frmModule::pgMain::OnDescriptionUpdate)
 	EVT_TEXT(IDC_UIName, frmModule::pgMain::OnUINameUpdate)
 	EVT_TEXT(IDC_TextureFE, frmModule::pgMain::OnTextureFEUpdate)
 	EVT_TEXT(IDC_TextureIcon, frmModule::pgMain::OnTextureIconUpdate)
+	EVT_TEXT(frmModule::pgMain::IDC_VersionMajor, frmModule::pgMain::OnVersionUpdate)
+	EVT_TEXT(frmModule::pgMain::IDC_VersionMinor, frmModule::pgMain::OnVersionUpdate)
+	EVT_TEXT(frmModule::pgMain::IDC_VersionRevision, frmModule::pgMain::OnVersionUpdate)
 END_EVENT_TABLE()
 
 BEGIN_EVENT_TABLE(frmModule::pgDataFolders, wxWindow)
@@ -43,20 +50,103 @@ END_EVENT_TABLE()
 frmModule::frmModule(wxWindow* parent, wxWindowID id, const wxPoint& pos, const wxSize& size)
 	: wxWindow(parent, id, pos, size)
 {
+	m_bNeedsSave = false;
 	SetBackgroundStyle(wxBG_STYLE_SYSTEM);
 	wxBoxSizer *pTopSizer = new wxBoxSizer( wxVERTICAL );
 	wxNotebook *pTabs;
 
 	pTopSizer->Add(pTabs = new wxNotebook(this, -1, wxPoint(0,0)), 1, wxEXPAND | wxALL, 3);
-	pTabs->AddPage(new pgMain(pTabs, IDP_General), wxT("General"));
+	pTabs->AddPage(new pgMain(this, pTabs, IDP_General), wxT("General"));
 	pTabs->AddPage(new pgDataFolders(pTabs, IDP_DataFolders), wxT("Data Folders"));
 	pTabs->AddPage(new pgDataArchives(pTabs, IDP_DataArchives), wxT("Data Archives"));
 	pTabs->AddPage(new pgRequiredMods(pTabs, IDP_RequiredMods), wxT("Required Mods"));
 	pTabs->AddPage(new pgCompatibleMods(pTabs, IDP_CompatibleMods), wxT("Compatible Mods"));
 
+	wxBoxSizer *pButtonSizer = new wxBoxSizer( wxHORIZONTAL );
+	pButtonSizer->AddStretchSpacer();
+	pButtonSizer->Add(new wxButton(this, IDC_SaveModule, AppStr(rgd_save)), 0, wxALIGN_RIGHT | wxALL, 3);
+	pTopSizer->Add(pButtonSizer, 0, wxEXPAND);
+
 	SetBackgroundColour(pTabs->GetBackgroundColour());
 	SetSizer(pTopSizer);
 	pTopSizer->SetSizeHints( this );
+}
+
+void frmModule::MarkModified()
+{
+	m_bNeedsSave = true;
+}
+
+void frmModule::DoSave()
+{
+	CModuleFile* pMod = TheConstruct->GetModule();
+	if(!pMod)
+	{
+		return;
+	}
+	if(pMod->IsFauxModule())
+	{
+		wxMessageBox(AppStr(modsave_nofile), AppStr(rgd_save), wxOK | wxICON_ERROR, this);
+		return;
+	}
+	wxString sPath = TheConstruct->GetModuleFile();
+	if(sPath.IsEmpty())
+	{
+		wxMessageBox(AppStr(modsave_nofile), AppStr(rgd_save), wxOK | wxICON_ERROR, this);
+		return;
+	}
+	if(!CheckAnsiPath(sPath, this))
+	{
+		return;
+	}
+	char* saPath = wxStringToAscii(sPath);
+	try
+	{
+		pMod->SaveModuleFile(saPath);
+	}
+	catch(CRainmanException* pE)
+	{
+		delete[] saPath;
+		ErrorBoxE(pE);
+		return;
+	}
+	delete[] saPath;
+	m_bNeedsSave = false;
+	wxMessageBox(AppStr(modsave_good), AppStr(rgd_save), wxOK | wxICON_INFORMATION, this);
+}
+
+void frmModule::OnSave(wxCommandEvent& event)
+{ UNUSED(event);
+	DoSave();
+}
+
+void frmModule::OnCloseWindow(wxCloseEvent& event)
+{
+	if(m_bNeedsSave)
+	{
+		wxMessageDialog* dialog = new wxMessageDialog(this,
+		AppStr(modsave_prompt), TheConstruct->GetModuleFile(), wxYES_NO|wxCANCEL);
+
+		int ans = dialog->ShowModal();
+		dialog->Destroy();
+
+		switch(ans)
+		{
+		case wxID_YES:
+			DoSave();
+			// A failed save leaves the flag set; keep the tab open.
+			if(m_bNeedsSave && event.CanVeto()) event.Veto();
+			break;
+
+		case wxID_NO:
+			break;
+
+		case wxID_CANCEL:
+		default:
+			if(event.CanVeto()) event.Veto();
+			break;
+		}
+	}
 }
 
 void frmModule::OnSize(wxSizeEvent& event)
@@ -64,8 +154,8 @@ void frmModule::OnSize(wxSizeEvent& event)
 	Layout();
 }
 
-frmModule::pgMain::pgMain(wxWindow* parent, wxWindowID id, const wxPoint& pos, const wxSize& size)
-	: wxWindow(parent, id, pos, size)
+frmModule::pgMain::pgMain(frmModule* pOwner, wxWindow* parent, wxWindowID id, const wxPoint& pos, const wxSize& size)
+	: wxWindow(parent, id, pos, size), m_pOwner(pOwner)
 {
 	m_bDoneInit = false;
 	SetBackgroundStyle(wxBG_STYLE_SYSTEM);
@@ -123,6 +213,7 @@ void frmModule::pgMain::OnDescriptionUpdate(wxCommandEvent& event)
 		char* sVal = wxStringToAscii(sValue);
 		TheConstruct->GetModule()->SetDescription(sVal);
 		delete[] sVal;
+		m_pOwner->MarkModified();
 	}
 }
 
@@ -134,6 +225,7 @@ void frmModule::pgMain::OnUINameUpdate(wxCommandEvent& event)
 		char* sVal = wxStringToAscii(sValue);
 		TheConstruct->GetModule()->SetUiName(sVal);
 		delete[] sVal;
+		m_pOwner->MarkModified();
 	}
 }
 
@@ -145,6 +237,7 @@ void frmModule::pgMain::OnTextureFEUpdate(wxCommandEvent& event)
 		char* sVal = wxStringToAscii(sValue);
 		TheConstruct->GetModule()->SetTextureFe(sVal);
 		delete[] sVal;
+		m_pOwner->MarkModified();
 	}
 }
 
@@ -156,7 +249,48 @@ void frmModule::pgMain::OnTextureIconUpdate(wxCommandEvent& event)
 		char* sVal = wxStringToAscii(sValue);
 		TheConstruct->GetModule()->SetTextureIcon(sVal);
 		delete[] sVal;
+		m_pOwner->MarkModified();
 	}
+}
+
+void frmModule::pgMain::OnVersionUpdate(wxCommandEvent& event)
+{
+	if(!m_bDoneInit)
+	{
+		return;
+	}
+	UNUSED(event);
+	long iMajor = TheConstruct->GetModule()->GetVersionMajor();
+	long iMinor = TheConstruct->GetModule()->GetVersionMinor();
+	long iRevision = TheConstruct->GetModule()->GetVersionRevision();
+	bool bChanged = false;
+	wxTextCtrl* pMajor = (wxTextCtrl*)FindWindow(IDC_VersionMajor);
+	wxTextCtrl* pMinor = (wxTextCtrl*)FindWindow(IDC_VersionMinor);
+	wxTextCtrl* pRevision = (wxTextCtrl*)FindWindow(IDC_VersionRevision);
+	if(pMajor && pMajor->GetValue().ToLong(&iMajor) && iMajor != TheConstruct->GetModule()->GetVersionMajor())
+	{
+		TheConstruct->GetModule()->SetVersionMajor(iMajor);
+		bChanged = true;
+	}
+	if(pMinor && pMinor->GetValue().ToLong(&iMinor) && iMinor != TheConstruct->GetModule()->GetVersionMinor())
+	{
+		TheConstruct->GetModule()->SetVersionMinor(iMinor);
+		bChanged = true;
+	}
+	if(pRevision && pRevision->GetValue().ToLong(&iRevision) && iRevision != TheConstruct->GetModule()->GetVersionRevision())
+	{
+		TheConstruct->GetModule()->SetVersionRevision(iRevision);
+		bChanged = true;
+	}
+	if(bChanged)
+	{
+		m_pOwner->MarkModified();
+	}
+}
+
+void frmModule::pgMain::OnVersionHelp(wxCommandEvent& event)
+{ UNUSED(event);
+	wxMessageBox(AppStr(mod_version_help), AppStr(mod_version), wxOK | wxICON_INFORMATION, this);
 }
 
 void frmModule::pgMain::InitModFolderList(wxControlWithItems* pList)

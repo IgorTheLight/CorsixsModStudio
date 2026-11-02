@@ -221,3 +221,14 @@ void RestoreBackupFile(IFileStore* pStore, wxString& sFile)
 	}
 	*/
 }
+
+bool CheckAnsiPath(const wxString& sPath, wxWindow* pParent)
+{
+	if(IsAnsiRepresentable(sPath.c_str()))
+	{
+		return true;
+	}
+	::wxMessageBox(wxString::Format(AppStr(path_notansi), sPath), AppStr(path_notansi_title),
+		wxOK | wxICON_ERROR, pParent);
+	return false;
+}

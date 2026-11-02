@@ -38,7 +38,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "../CRgmFile.h"
 #include "../CUcsTransaction.h"
 #include "../CInheritTable.h"
-#include "../CIniConfigFile.h"
 #include "../zLib/zlib.h"
 
 #endif

@@ -30,7 +30,6 @@
 #include "Utility.h"
 #include "frmMassExtract.h"
 #include <memory>
-#include <Rainman_RGDDump.h>
 #include "Common.h"
 
 wxString CLocaleTool::GetName() {return AppStr(locale);}
@@ -467,49 +466,6 @@ void CMakeLuaInheritTree::DoAction()
 	}
 
 	delete pTable;
-}
-
-wxString CRedButtonTool::GetName() {return AppStr(redbutton_toolname);}
-wxString CRedButtonTool::GetHelpString() {return wxT("");}
-wxString CRedButtonTool::GetBitmapName() {return wxT("IDB_REDBUTTON");}
-void CRedButtonTool::DoAction()
-{
-	CFileSystemStore oFSO;
-	oFSO.VInit();
-	try
-	{
-		delete oFSO.VOpenOutputStream("I:\\j\\k\\l\\m\\n\\o\\p\\q.test", true);
-	}
-	catch(CRainmanException *pE)
-	{
-		ErrorBoxE(pE);
-	}
-	/*
-	CIniConfigFile oConfig;
-	oConfig.loadFile("E:\\Company of Heroes\\RelicCOH.module");
-	oConfig.saveFile("E:\\Company of Heroes\\RelicCOH_.module");
-	*/
-
-	/*
-	wxString sOutFile = wxFileSelector(wxT("Select strings list"), wxT(""), wxT(""), wxT("txt"), wxT("Text File (*.txt)|*.txt") , wxOPEN, TheConstruct);
-
-	if(sOutFile.Len() == 0) return;
-
-	char* sOut = wxStringToAscii(sOutFile);
-
-	TheConstruct->GetRgdHashTable()->XRefWithStringList(sOut);
-
-	delete[] sOut;
-	*/
-	/*
-	char* sOut = wxStringToAscii(oF.GetBaseFolder() + oF.GetFile());
-	IFileStore::IStream* pS = TheConstruct->GetModule()->VOpenStream(sOut);
-	delete[] sOut;
-	RgdDump::CRgd oRgd;
-
-	oRgd.loadFromStream(pS);
-	delete pS;
-	*/
 }
 
 wxString CRefreshFilesTool::GetName() {return AppStr(refreshfiles_name);}

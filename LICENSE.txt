@@ -1,0 +1,10 @@
+Corsix's Mod Studio is licensed under the GNU General Public License
+version 2 or later. The Rainman library is licensed under the GNU Lesser
+General Public License version 2.1 or later. See the copyright headers in
+the source files for the exact notices.
+
+Bundled third-party components have their own terms, including Lua
+(MIT-style), wxWidgets (wxWindows Library Licence), wxPropertyGrid,
+libsquish (MIT), zlib, and the artwork and data files under CDMS/CDMS.
+
+Review those notices before redistributing a combined build.

@@ -206,7 +206,7 @@ frmMassExtract::frmMassExtract(wxString sFile, wxTreeItemId& oFolder, bool bForc
 
 	pTopSizer->Add(pButtonSizer, 0, wxALIGN_RIGHT);
 
-	pTopSizer->Add(m_pCheckList = new wxCheckListBox(this, -1, wxDefaultPosition, wxDefaultSize, oStrs), 0, wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL | wxALL, 3);
+	pTopSizer->Add(m_pCheckList = new wxCheckListBox(this, -1, wxDefaultPosition, wxDefaultSize, oStrs), 0, wxALIGN_LEFT | wxALL, 3);
 
 	SetSizer(pTopSizer);
 	pTopSizer->SetSizeHints( this );
@@ -230,6 +230,8 @@ void frmMassExtract::OnGoClick(wxCommandEvent& event)
 	{
 		wxString sSaveDirectory = wxDirSelector(wxT("Choose where to extract folder"));
 		if(sSaveDirectory.IsEmpty())
+			return;
+		if(!CheckAnsiPath(sSaveDirectory, this))
 			return;
 
 		CModuleFile *pModule = TheConstruct->GetModule();

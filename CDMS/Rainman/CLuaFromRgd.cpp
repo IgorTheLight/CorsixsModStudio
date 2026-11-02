@@ -22,6 +22,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "Exception.h"
 #include "Internal_Util.h"
 #include <vector>
+#include <atomic>
 
 extern "C" {
 typedef  unsigned long  int  ub4;   /* unsigned 4-byte quantities */
@@ -387,14 +388,7 @@ IMetaNode::IMetaTable* MakeLuaFromRgdAndNil_LoadTable(IMetaNode::IMetaTable *pSr
 
 			if(bAllowLua)
 			{
-				#ifndef RAINMAN_GNUC
-				__asm
-				{
-					nop; // Very wierd hack for MSVC. Without this the following line gives a crash in release mode o_O
-					// Could possibly be a compiler bug; as adding inline ASM code prevents the MS compiler from doing
-					// certain optimizations.
-				};
-				#endif
+				std::atomic_signal_fence(std::memory_order_seq_cst);
 				sprintf(sFullpath, "data\\attrib\\%s.lua", sFilename);
 				try
 				{

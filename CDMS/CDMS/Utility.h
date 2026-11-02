@@ -57,4 +57,11 @@ void BackupFile(IFileStore* pStore, wxString& sFile);
 void RestoreBackupFile(wxString& sFile);
 void RestoreBackupFile(IFileStore* pStore, wxString& sFile);
 
+/*
+	Checks that a path the user selected can be passed to the ANSI file APIs.
+	Shows an explanation and returns false when it cannot, so the caller can
+	abort instead of operating on a mangled path.
+*/
+bool CheckAnsiPath(const wxString& sPath, wxWindow* pParent = 0);
+
 #endif

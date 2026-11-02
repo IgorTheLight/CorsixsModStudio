@@ -30,3 +30,21 @@
 *.exe
 *.out
 *.app
+
+# Modern CMake and vcpkg builds
+/out/
+/build/
+/vcpkg_installed/
+CMakeUserPresets.json
+
+# Visual Studio editor state
+# The 2005 project files themselves are kept for reference; only the per-user
+# and per-session state files are ignored.
+*.ncb
+*.suo
+*.aps
+*.user
+*.VC.db
+*.VC.opendb
+.vs/
+

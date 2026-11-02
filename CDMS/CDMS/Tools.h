@@ -92,16 +92,6 @@ public:
 	virtual void DoAction();
 };
 
-class CRedButtonTool : public ConstructFrame::ITool
-{
-public:
-	virtual wxString GetName();
-	virtual wxString GetHelpString();
-	virtual wxString GetBitmapName();
-
-	virtual void DoAction();
-};
-
 class CMakeLuaInheritTree : public ConstructFrame::ITool
 {
 protected:

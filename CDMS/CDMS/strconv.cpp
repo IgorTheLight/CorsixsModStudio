@@ -17,6 +17,7 @@
 */
 #include "strconv.h"
 #include <malloc.h>
+#include <windows.h>
 #include "Common.h"
 
 wchar_t* AsciiToUnicode(const char* sAscii)
@@ -67,18 +68,39 @@ wchar_t* AsciiToUnicodeFree(char* sAscii)
 
 char* UnicodeToAscii(const wchar_t* pUnicode)
 {
-	size_t iLen = wcslen(pUnicode) + 1;
-	char *sAscii = new char[iLen];
+	if(!pUnicode) return 0;
+	// Rainman and the file APIs it uses take ANSI strings, so convert through
+	// the system ANSI code page. A plain truncation to one byte per character
+	// used to turn everything above Latin-1 into '?', which made the program
+	// unusable on localized Windows installations (Cyrillic, Greek, CJK, ...).
+	int iNeeded = WideCharToMultiByte(CP_ACP, 0, pUnicode, -1, 0, 0, 0, 0);
+	if(iNeeded <= 0) return 0;
+	char* sAscii = new char[iNeeded];
 	if(!sAscii) return 0;
-	for(size_t i = 0; i < iLen; ++i)
+	if(WideCharToMultiByte(CP_ACP, 0, pUnicode, -1, sAscii, iNeeded, 0, 0) <= 0)
 	{
-		wchar_t iChar = pUnicode[i];
-		if(iChar & ~0xFF)
-			sAscii[i] = '?';
-		else
-			sAscii[i] = (char)iChar;
+		delete[] sAscii;
+		return 0;
 	}
 	return sAscii;
+}
+
+bool IsAnsiRepresentable(const wchar_t* pUnicode)
+{
+	if(!pUnicode) return false;
+	// With the Windows "Use Unicode UTF-8 for worldwide language support"
+	// option the ANSI code page is UTF-8, which can represent every string (and
+	// rejects the WC_NO_BEST_FIT_CHARS flag). Treating it as unrepresentable
+	// would refuse every path on such installations.
+	if(GetACP() == CP_UTF8) return true;
+	int iNeeded = WideCharToMultiByte(CP_ACP, WC_NO_BEST_FIT_CHARS, pUnicode, -1, 0, 0, 0, 0);
+	if(iNeeded <= 0) return false;
+	char* sTmp = new char[iNeeded];
+	if(!sTmp) return false;
+	BOOL bUsedDefaultChar = FALSE;
+	BOOL bOk = WideCharToMultiByte(CP_ACP, WC_NO_BEST_FIT_CHARS, pUnicode, -1, sTmp, iNeeded, 0, &bUsedDefaultChar);
+	delete[] sTmp;
+	return bOk != FALSE && bUsedDefaultChar == FALSE;
 }
 
 wxString AsciiTowxString(const char* sAscii)

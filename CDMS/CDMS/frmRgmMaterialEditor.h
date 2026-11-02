@@ -52,6 +52,7 @@ protected:
 
 	CRgmFile* m_pRgmFile;
 	bool m_bOwnRgm;
+	bool m_bNeedsSave;
 
 	void _FillLeft();
 	void _FillRight(CRgmFile::CMaterial* pMaterial);
@@ -69,6 +70,7 @@ public:
 	void OnTreeSelect(wxTreeEvent& event);
 	void OnTreeRightClick(wxTreeEvent& event);
 	void OnSave(wxCommandEvent &event);
+	void OnCloseWindow(wxCloseEvent& event);
 
 	enum
 	{

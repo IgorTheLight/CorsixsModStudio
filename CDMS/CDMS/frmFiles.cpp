@@ -30,7 +30,7 @@
 #include "strings.h"
 #include "config.h"
 #include "Utility.h"
-#include "../../Rainman/src/zLib/zlib.h"
+#include "../zlib/zlib.h"
 extern "C" {
 #include <lauxlib.h>
 #include <lualib.h>

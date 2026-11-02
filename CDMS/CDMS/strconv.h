@@ -43,6 +43,13 @@ wchar_t* AsciiToUnicodeFree(char* sAscii);
 char* UnicodeToAscii(const wchar_t* pUnicode);
 
 /*
+	Tests whether the string can be converted to the system ANSI code page
+	without losing characters. Paths that fail this test cannot be passed to
+	the file APIs, so callers should refuse them with a clear message.
+*/
+bool IsAnsiRepresentable(const wchar_t* pUnicode);
+
+/*
 	\return Returns a string
 */
 wxString AsciiTowxString(const char* sAscii);

@@ -27,6 +27,7 @@ extern "C" {
 #include <string.h>
 #include <stdlib.h>
 #include <algorithm>
+#include <atomic>
 #include "CModuleFile.h"
 #include "Exception.h"
 #include "memdebug.h"
@@ -533,9 +534,7 @@ int CLuaFile::_InheritMeta(lua_State* L)
 		delete pLua;
 		lua_pushlightuserdata(L, new CRainmanException(pE, __FILE__, __LINE__, "no MetaData found in file \'%s\' in `_InheritMeta'", sFile) );
 		lua_error(L);
-		#ifndef RAINMAN_GNUC
-		__asm nop;
-		#endif
+		std::atomic_signal_fence(std::memory_order_seq_cst);
 	}
 
 	lua_xmove(pLua->m_pLua, L, 1);
@@ -1312,24 +1311,22 @@ bool CLuaFile::_SortCMetaTableChildren(CLuaFile::_NodeLocator* p1, CLuaFile::_No
 			return false;
 		}
 
-		char *sUnderPos1, *sUnderPos2;
-		sUnderPos1 = strrchr(p1->sName, '_');
-		sUnderPos2 = strrchr(p2->sName, '_');
+		// Compare without modifying the names: the old code wrote a zero over
+		// the underscore and put it back, which is unsafe for shared or
+		// read-only strings and surprising inside a sort comparator.
+		const char *sUnderPos1 = strrchr(p1->sName, '_');
+		const char *sUnderPos2 = strrchr(p2->sName, '_');
 		if(IsALLNumerical(sUnderPos1) && IsALLNumerical(sUnderPos2))
 		{
-			*sUnderPos1 = *sUnderPos2 = 0;
-			if(stricmp(p1->sName, p2->sName) == 0)
+			size_t iPrefixLen1 = (size_t)(sUnderPos1 - p1->sName);
+			size_t iPrefixLen2 = (size_t)(sUnderPos2 - p2->sName);
+			if(iPrefixLen1 == iPrefixLen2 && strnicmp(p1->sName, p2->sName, iPrefixLen1) == 0)
 			{
-				*sUnderPos1 = *sUnderPos2 = '_';
 				long l1 = atol(sUnderPos1 + 1);
 				long l2 = atol(sUnderPos2 + 1);
 				return (l1 < l2);
 			}
-			else
-			{
-				*sUnderPos1 = *sUnderPos2 = '_';
-				return (stricmp(p1->sName, p2->sName) < 0);
-			}
+			return (stricmp(p1->sName, p2->sName) < 0);
 		}
 		return (stricmp(p1->sName, p2->sName) < 0);
 	}
@@ -1358,11 +1355,7 @@ void CLuaFile::_TableToNodeList(CLuaFile::_NodeList& lstNodeList, lua_State* L,c
 		lua_pop(L, 1); // pop value
 		if(bSkip_G && (lua_type(L, -1) == LUA_TSTRING) && ((strcmp(lua_tostring(L, -1), "_G") == 0) || (strcmp(lua_tostring(L, -1), "DebugThis") == 0)))
 		{
-			#ifdef RAINMAN_GNUC
-			;
-			#else
-			__asm nop;
-			#endif
+			std::atomic_signal_fence(std::memory_order_seq_cst);
 		}
 		else
 			lstNodeList.push_back(new _NodeLocator(L, -1, pParent));

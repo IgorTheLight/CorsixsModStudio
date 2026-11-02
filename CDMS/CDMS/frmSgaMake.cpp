@@ -22,6 +22,7 @@
 #include "config.h"
 #include "Construct.h"
 #include "CtrlStatusText.h"
+#include "Utility.h"
 #include <errno.h>
 #include <wx/textdlg.h>
 #include <wx/filename.h>
@@ -137,12 +138,22 @@ void frmSgaMake::OnCancelClick(wxCommandEvent& event)
 
 void frmSgaMake::OnBrowseInClick(wxCommandEvent& event)
 { UNUSED(event);
-	m_pInDir->SetValue(wxDirSelector(AppStr(sgapack_dirselect), m_pInDir->GetValue(), 0, wxDefaultPosition, TheConstruct));
+	wxString sDir = wxDirSelector(AppStr(sgapack_dirselect), m_pInDir->GetValue(), 0, wxDefaultPosition, TheConstruct);
+	if(sDir.IsEmpty() || !CheckAnsiPath(sDir, this))
+	{
+		return;
+	}
+	m_pInDir->SetValue(sDir);
 }
 
 void frmSgaMake::OnBrowseOutClick(wxCommandEvent& event)
 {
-	m_pOutFile->SetValue(wxFileSelector(AppStr(sgapack_outselect), wxT(""), m_pOutFile->GetValue(), wxT("sga"), AppStr(sgapack_filter) , wxSAVE | wxOVERWRITE_PROMPT, TheConstruct));
+	wxString sOutFile = wxFileSelector(AppStr(sgapack_outselect), wxT(""), m_pOutFile->GetValue(), wxT("sga"), AppStr(sgapack_filter) , wxSAVE | wxOVERWRITE_PROMPT, TheConstruct);
+	if(sOutFile.IsEmpty() || !CheckAnsiPath(sOutFile, this))
+	{
+		return;
+	}
+	m_pOutFile->SetValue(sOutFile);
 	OnFileOutUpdated(event);
 }
 

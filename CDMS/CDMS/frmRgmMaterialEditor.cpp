@@ -30,6 +30,7 @@ BEGIN_EVENT_TABLE(frmRgmMaterialEditor, wxWindow)
 	EVT_TREE_SEL_CHANGING(IDC_TablesTree, frmRgmMaterialEditor::OnTreeSelect)
 	EVT_TREE_ITEM_MENU(IDC_TablesTree, frmRgmMaterialEditor::OnTreeRightClick)
 	EVT_BUTTON(wxID_SAVE, frmRgmMaterialEditor::OnSave)
+	EVT_CLOSE(frmRgmMaterialEditor::OnCloseWindow)
 END_EVENT_TABLE()
 
 class CRgmMaterialTreeData : public wxTreeItemData
@@ -151,8 +152,41 @@ void frmRgmMaterialEditor::OnSave(wxCommandEvent &event)
 		return;
 	}
 	wxMessageBox(AppStr(rgd_savegood),AppStr(rgd_save),wxICON_INFORMATION,this);
+	m_bNeedsSave = false;
 
 	delete pStream;
+}
+
+void frmRgmMaterialEditor::OnCloseWindow(wxCloseEvent& event)
+{
+	if(m_bNeedsSave)
+	{
+		wxMessageDialog* dialog = new wxMessageDialog(this,
+		wxT("Material file has been modified. Save file?"), m_sFilename, wxYES_NO|wxCANCEL);
+
+		int ans = dialog->ShowModal();
+		dialog->Destroy();
+
+		switch(ans)
+		{
+		case wxID_YES:
+			{
+				wxCommandEvent dummy;
+				OnSave(dummy);
+				// A failed save leaves the flag set; keep the tab open.
+				if(m_bNeedsSave && event.CanVeto()) event.Veto();
+				break;
+			}
+
+		case wxID_NO:
+			break;
+
+		case wxID_CANCEL:
+		default:
+			if(event.CanVeto()) event.Veto();
+			break;
+		}
+	}
 }
 
 void frmRgmMaterialEditor::SetObject(CRgmFile* pRgmFile, bool bTakeOwnership)
@@ -257,6 +291,7 @@ frmRgmMaterialEditor::frmRgmMaterialEditor(wxTreeItemId& oFileParent, wxString s
 
 	m_pRgmFile = 0;
 	m_bOwnRgm = false;
+	m_bNeedsSave = false;
 }
 
 frmRgmMaterialEditor::~frmRgmMaterialEditor()
@@ -330,6 +365,7 @@ void frmRgmMaterialEditor::OnPropertyChange(wxPropertyGridEvent& event)
 			break;
 		}
 	}
+	m_bNeedsSave = true;
 }
 
 void frmRgmMaterialEditor::OnTreeRightClick(wxTreeEvent& event)

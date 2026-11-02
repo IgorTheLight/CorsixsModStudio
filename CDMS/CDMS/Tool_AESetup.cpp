@@ -76,7 +76,12 @@ void frmUCSToDAT::OnCancelClick(wxCommandEvent& event)
 
 void frmUCSToDAT::OnBrowseOutClick(wxCommandEvent& event)
 { UNUSED(event);
-	m_pOutFile->SetValue(wxFileSelector(AppStr(aesetup_outselect), wxT(""), m_pOutFile->GetValue(), wxT("dat"), AppStr(aesetup_filter), wxSAVE | wxOVERWRITE_PROMPT, TheConstruct));
+	wxString sOutFile = wxFileSelector(AppStr(aesetup_outselect), wxT(""), m_pOutFile->GetValue(), wxT("dat"), AppStr(aesetup_filter), wxSAVE | wxOVERWRITE_PROMPT, TheConstruct);
+	if(sOutFile.IsEmpty() || !CheckAnsiPath(sOutFile, this))
+	{
+		return;
+	}
+	m_pOutFile->SetValue(sOutFile);
 }
 
 void frmUCSToDAT::OnGoClick(wxCommandEvent& event)

@@ -96,7 +96,7 @@ public:
 		CFilesTreeItemData *pData = (CFilesTreeItemData*)TheConstruct->GetFilesList()->GetTree()->GetItemData(oFile);
 		if(stricmp(pData->sMod, TheConstruct->GetModule()->GetFileMapName()) == 0)
 		{
-			char* sTmp = strrchr(pData->sSource, '.');
+			const char* sTmp = strrchr(pData->sSource, '.');
 			if(!sTmp || (stricmp(sTmp, ".sga") != 0))
 			{
 				wxMessageBox(AppStr(extract_already),VGetAction(),wxICON_INFORMATION,TheConstruct);

@@ -22,6 +22,7 @@
 #include "config.h"
 #include "Construct.h"
 #include "CtrlStatusText.h"
+#include "Utility.h"
 #include <errno.h>
 #include <wx/textdlg.h>
 #include "Common.h"
@@ -167,6 +168,8 @@ void frmNewMod::OnGameChange(wxCommandEvent& event)
 void frmNewMod::OnBrowseClick(wxCommandEvent& event)
 {
 	wxString sVal = wxDirSelector(AppStr(sgapack_dirselect), m_pCreation->GetLabel(), 0, wxDefaultPosition, TheConstruct);
+	if(!CheckAnsiPath(sVal, this))
+		return;
 
 	m_pCreation->SetLabel(sVal);
 

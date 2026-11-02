@@ -18,9 +18,11 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
 #include "CModuleFile.h"
+#include "ModuleFileWriter.h"
 #include "Internal_Util.h"
 #include "Exception.h"
 #include <new>
+#include <string>
 #include "memdebug.h"
 
 CModuleFile::CModuleFile()
@@ -1696,3 +1698,20 @@ bool CModuleFile::CCohDataSource::IsLoaded() const
 	return m_bIsLoaded;
 }
 
+void CModuleFile::SaveModuleFile(const char* sFileName)
+{
+	if(m_bIsFauxModule)
+	{
+		throw new CRainmanException(0, __FILE__, __LINE__, "The mod was loaded from an SGA archive, so it has no .module file to update");
+	}
+	if(sFileName == 0)
+	{
+		throw new CRainmanException(0, __FILE__, __LINE__, "No file specified");
+	}
+	std::string sError;
+	if(!Rainman_UpdateModuleFile(sFileName, m_sUiName, m_sDescription, m_sTextureFe, m_sTextureIcon,
+			m_iModVersionMajor, m_iModVersionMinor, m_iModVersionRevision, sError))
+	{
+		throw new CRainmanException(0, __FILE__, __LINE__, "%s", sError.c_str());
+	}
+}

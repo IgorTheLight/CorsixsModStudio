@@ -312,12 +312,16 @@ void frmScarEditor::OnCloseWindow(wxCloseEvent& event)
 		{
 		case wxID_YES:
 			DoSave();
+			// A failed save leaves the pending flag set; keep the tab open.
+			if (m_bNeedsSaving && event.CanVeto()) event.Veto();
+			break;
+
+		case wxID_NO:
 			break;
 
 		case wxID_CANCEL:
 		default:
 			if (event.CanVeto()) event.Veto();
-		case wxID_NO:
 			break;
 		}
 	}

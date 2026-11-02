@@ -13,7 +13,7 @@
 #include <stddef.h>
 
 
-#include "C:\Users\Admin\Documents\Visual Studio 2005\Projects\lua-5.1.2\src\luaconf.h"
+#include "luaconf.h"
 #undef LUA_API
 #define LUA_API extern
 #undef LUALIB_API

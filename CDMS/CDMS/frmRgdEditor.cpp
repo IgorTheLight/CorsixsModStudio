@@ -1484,18 +1484,18 @@ void frmRGDEditor::OnAddChild(wxCommandEvent& event)
 					}
 					m_pPropertyGrid->SetPropertyHelpString(oEntry, GetMetaNodeHelp(pNode));
 					m_pPropertyGrid->SetPropertyClientData(oEntry, (void*)iID);
-					oEntry = m_pPropertyGrid->GetNextSibling(oEntry);
+					oEntry = m_pPropertyGrid->wxPropertyContainerMethods::GetNextSibling(oEntry);
 					while(oEntry.IsOk())
 					{
 						m_pPropertyGrid->SetPropertyClientData(oEntry, (void*)(((unsigned long)m_pPropertyGrid->GetPropertyClientData(oEntry)) + 1));
-						oEntry = m_pPropertyGrid->GetNextSibling(oEntry);
+						oEntry = m_pPropertyGrid->wxPropertyContainerMethods::GetNextSibling(oEntry);
 					}
 					pNode = 0;
 					delete pNode2;
 					break;
 				}
 				delete pNode2;
-				oPropItem = m_pPropertyGrid->GetNextSibling(oPropItem);
+				oPropItem = m_pPropertyGrid->wxPropertyContainerMethods::GetNextSibling(oPropItem);
 			}
 			delete pNode;
 		}
@@ -1562,12 +1562,16 @@ void frmRGDEditor::OnCloseWindow(wxCloseEvent& event)
 		{
 		case wxID_YES:
 			DoSave();
+			// A failed save leaves the pending flag set; keep the tab open.
+			if (m_bDataNeedsSaving && event.CanVeto()) event.Veto();
+			break;
+
+		case wxID_NO:
 			break;
 
 		case wxID_CANCEL:
 		default:
 			if (event.CanVeto()) event.Veto();
-		case wxID_NO:
 			break;
 		}
 	}

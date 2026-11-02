@@ -1,0 +1,34 @@
+{
+  "version": 6,
+  "cmakeMinimumRequired": {"major": 3, "minor": 24, "patch": 0},
+  "configurePresets": [
+    {
+      "name": "windows-wx28-win32",
+      "displayName": "Windows Win32 with wxWidgets 2.8.12",
+      "generator": "Visual Studio 18 2026",
+      "architecture": "Win32",
+      "binaryDir": "${sourceDir}/out/build/${presetName}",
+      "cacheVariables": {}
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "windows-wx28-win32-debug",
+      "displayName": "Debug Win32",
+      "configurePreset": "windows-wx28-win32",
+      "configuration": "Debug"
+    },
+    {
+      "name": "windows-wx28-win32-relwithdebinfo",
+      "displayName": "RelWithDebInfo Win32",
+      "configurePreset": "windows-wx28-win32",
+      "configuration": "RelWithDebInfo"
+    },
+    {
+      "name": "windows-wx28-win32-release",
+      "displayName": "Release Win32",
+      "configurePreset": "windows-wx28-win32",
+      "configuration": "Release"
+    }
+  ]
+}

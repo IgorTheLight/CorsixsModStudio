@@ -39,8 +39,11 @@ char* Util_fgetline(FILE *f, unsigned int iInitSize)
 	if(iInitSize < 4) iInitSize = 4;
 	iTotalLen = iInitSize;
 	char *sBuffer = new char[iInitSize];
-	char *sReadTo = sBuffer;
 	if(sBuffer == 0) return 0;
+	// An empty file reaches the EOF branch below without fgets having written
+	// anything, so the buffer must be a valid empty string from the start.
+	sBuffer[0] = 0;
+	char *sReadTo = sBuffer;
 
 	do
 	{
@@ -48,7 +51,11 @@ char* Util_fgetline(FILE *f, unsigned int iInitSize)
 		{
 			if(feof(f))
 			{
-				if(sReadTo[strlen(sReadTo) - 1] == '\n') sReadTo[strlen(sReadTo) - 1] = 0;
+				// Check the accumulated line, not sReadTo: on a file that ends
+				// without a newline sReadTo points at the terminating zero, and
+				// strlen(sReadTo) - 1 would index before the buffer.
+				size_t iLen = strlen(sBuffer);
+				if(iLen > 0 && sBuffer[iLen - 1] == '\n') sBuffer[iLen - 1] = 0;
 				return sBuffer;
 			}
 			delete[] sBuffer;

@@ -1,0 +1,4 @@
+LIBRARY squish
+EXPORTS
+    CompressImage
+    DecompressImage

@@ -1732,24 +1732,22 @@ bool _SortCMetaTableChildren(CRgdFile::_RgdEntry* p1, CRgdFile::_RgdEntry* p2)
 		return (p1->iHash < p2->iHash);
 	}
 
-	char *sUnderPos1, *sUnderPos2;
-	sUnderPos1 = strrchr((char*) p1->sName, '_');
-	sUnderPos2 = strrchr((char*) p2->sName, '_');
+	// Compare without modifying the names: the old code wrote a zero over the
+	// underscore and put it back, which is unsafe for shared or read-only
+	// strings and surprising behaviour inside a sort comparator.
+	const char *sUnderPos1 = strrchr(p1->sName, '_');
+	const char *sUnderPos2 = strrchr(p2->sName, '_');
 	if(IsALLNumerical(sUnderPos1) && IsALLNumerical(sUnderPos2))
 	{
-		*sUnderPos1 = *sUnderPos2 = 0;
-		if(stricmp(p1->sName, p2->sName) == 0)
+		size_t iPrefixLen1 = (size_t)(sUnderPos1 - p1->sName);
+		size_t iPrefixLen2 = (size_t)(sUnderPos2 - p2->sName);
+		if(iPrefixLen1 == iPrefixLen2 && strnicmp(p1->sName, p2->sName, iPrefixLen1) == 0)
 		{
-			*sUnderPos1 = *sUnderPos2 = '_';
 			long l1 = atol(sUnderPos1 + 1);
 			long l2 = atol(sUnderPos2 + 1);
 			return (l1 < l2);
 		}
-		else
-		{
-			*sUnderPos1 = *sUnderPos2 = '_';
-			return (stricmp(p1->sName, p2->sName) < 0);
-		}
+		return (stricmp(p1->sName, p2->sName) < 0);
 	}
 	return (stricmp(p1->sName, p2->sName) < 0);
 }

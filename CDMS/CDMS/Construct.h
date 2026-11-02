@@ -72,6 +72,11 @@ public:
 
 	void OnCloseMod(wxCommandEvent& event);
     void OnQuit(wxCommandEvent& event);
+	// Sends a close event to every editor tab so unsaved work prompts first.
+	// Returns false when a tab vetoed, meaning the caller must not close the mod.
+	bool ConfirmCloseTabs(bool bCanVeto);
+	// Asks the tab being closed (via its X button) whether it may close.
+	void OnClosePage(wxAuiNotebookEvent& event);
 	void OnOpenModDoW(wxCommandEvent& event);
 	void OnOpenModDC(wxCommandEvent& event);
 	void OnOpenModSS(wxCommandEvent& event);
@@ -79,6 +84,8 @@ public:
 	void OnOpenModOF(wxCommandEvent& event);
 	void OnOpenSga(wxCommandEvent& event);
 	void DoNewMod();
+	void OnNewMod(wxCommandEvent& event);
+	void OnModuleProperties(wxCommandEvent& event);
 
 	enum eLoadModGames
 	{
@@ -125,18 +132,22 @@ public:
 	void LaunchSS(wxCommandEvent& event);
 	void LaunchWarnings(wxCommandEvent& event);
 	void LaunchCredits(wxCommandEvent& event);
+	void LaunchAbout(wxCommandEvent& event);
 	void LaunchHelp(wxCommandEvent& event);
 	static void StaticLaunchHelp();
 	void LaunchDonate(wxCommandEvent& event);
-	void LaunchLuaRef(wxCommandEvent& event);
-	void LaunchKresjahWiki(wxCommandEvent& event);
-	void LaunchForumDoW(wxCommandEvent& event);
-	void LaunchForumCoH(wxCommandEvent& event);
-	void LaunchNewRDNWiki(wxCommandEvent& event);
-	void LaunchRDNWiki(wxCommandEvent& event);
 	void HideDonate(wxCommandEvent& event);
 
+	// Keyboard shortcuts (see the accelerator table in the constructor).
+	void OnSaveActive(wxCommandEvent& event);
+	void OnCloseActiveTab(wxCommandEvent& event);
+	void OnNextTab(wxCommandEvent& event);
+
+	void LaunchProjectPage(wxCommandEvent& event);
+
 	void LaunchTool(wxString sExeName, bool bIsInModTools = true);
+	wxString FindRelicTool(const wxString& sExeName, bool bIsInModTools) const;
+	void UpdateRelicToolsMenu();
 	static void LaunchURL(wxString sURL);
 
 	void OnCloseWindow(wxCloseEvent& event);
@@ -223,15 +234,15 @@ enum
 	IDM_PlayNoMovies,
 	// Help Menu
 	IDM_Index,
-	IDM_LuaRef,
-	IDM_ForumDoW,
-	IDM_ForumCoH,
-	IDM_RDNWikiNew,
-	IDM_RDNWiki,
-	IDM_KresjahWiki,
+	IDM_ProjectPage,
 	IDM_About,
 	IDM_Credits,
 	IDM_HideDonate,
+
+	// Keyboard shortcuts (dispatched from the accelerator table)
+	IDM_SaveActive,
+	IDM_CloseActiveTab,
+	IDM_NextTab,
 
 	// Stuff
 	IDC_Splitter

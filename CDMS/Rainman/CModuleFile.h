@@ -64,6 +64,16 @@ public:
 	void LoadModuleFile(const char* sFileName, CALLBACK_ARG_OPT);
 	void LoadSgaAsMod(const char* sFileName, CALLBACK_ARG_OPT);
 
+	/*!
+		Writes the values edited in the Mod Studio GUI (UIName, Description,
+		TextureFE, TextureIcon and ModVersion) back into an existing .module
+		file. Every other line - comments, unknown keys, CoH data sections - is
+		preserved byte for byte, which keeps mods that use directives this build
+		does not model intact.
+		\return Returns no value, but throws a CRainmanException on error
+	*/
+	void SaveModuleFile(const char* sFileName);
+
 	const static unsigned long RR_LocalisedText = 1; //!< Reload DoW UCS files / CoH UCS files
 	const static unsigned long RR_DataFolders = 2; //!< Reload all data folders
 	const static unsigned long RR_DataArchives = 4; //!< Reload all SGA archives

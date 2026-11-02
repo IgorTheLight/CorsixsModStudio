@@ -25,21 +25,26 @@
 #include "frmCredits.h"
 #include "frmLocaleSelector.h"
 #include "frmRgdEditor.h"
+#include "frmUCSEditor.h"
+#include "frmScarEditor.h"
+#include "frmRgmMaterialEditor.h"
 #include "strconv.h"
 #include <Rainman.h>
 #include <memory>
 RAINMAN_API bool Lua51_Load(const wchar_t* sDll);
 #include "Tools.h"
 extern "C" {
-#include "..\..\Rainman\src\md5.h"
+#include "..\Rainman\md5.h"
 }
 #include <wx/filedlg.h>
+#include <wx/aboutdlg.h>
 #include "Utility.h"
 #include "strings.h"
 #include "config.h"
 #include "strconv.h"
 // For ShellExecute :(
 #include <windows.h>
+#include <shellapi.h>
 #include <shlobj.h>
 #include <shobjidl.h>
 #ifdef _DEBUG
@@ -48,6 +53,8 @@ extern "C" {
 #include "Common.h"
 
 BEGIN_EVENT_TABLE(ConstructFrame, wxFrame)
+	EVT_AUINOTEBOOK_PAGE_CLOSE(wxID_ANY, ConstructFrame::OnClosePage)
+	EVT_MENU(IDM_NewMod, ConstructFrame::OnNewMod)
 	EVT_MENU(IDM_LoadModDoWWA, ConstructFrame::OnOpenModDoW)
 	EVT_MENU(IDM_LoadModDC, ConstructFrame::OnOpenModDC)
 	EVT_MENU(IDM_LoadModSS, ConstructFrame::OnOpenModSS)
@@ -55,6 +62,7 @@ BEGIN_EVENT_TABLE(ConstructFrame, wxFrame)
 	EVT_MENU(IDM_LoadSga, ConstructFrame::OnOpenSga)
 	EVT_MENU(wxID_EXIT, ConstructFrame::OnQuit)
 	EVT_MENU(wxID_CLOSE, ConstructFrame::OnCloseMod)
+	EVT_MENU(wxID_PROPERTIES, ConstructFrame::OnModuleProperties)
 	EVT_MENU(IDM_ModTool1, ConstructFrame::LaunchModTool1)
 	EVT_MENU(IDM_ModTool2, ConstructFrame::LaunchModTool2)
 	EVT_MENU(IDM_ModTool3, ConstructFrame::LaunchModTool3)
@@ -90,16 +98,16 @@ BEGIN_EVENT_TABLE(ConstructFrame, wxFrame)
 	EVT_MENU(IDM_PlaySS, ConstructFrame::LaunchSS)
 	EVT_MENU(IDM_PlayWarn, ConstructFrame::LaunchWarnings)
 	EVT_MENU(wxID_HELP_CONTENTS, ConstructFrame::LaunchHelp)
+	EVT_MENU(IDM_ProjectPage, ConstructFrame::LaunchProjectPage)
+	EVT_MENU(IDM_About, ConstructFrame::LaunchAbout)
 	EVT_MENU(IDM_Credits, ConstructFrame::LaunchCredits)
 	EVT_MENU(IDM_HideDonate, ConstructFrame::HideDonate)
 
-	EVT_MENU(IDM_ForumDoW, ConstructFrame::LaunchForumDoW)
-	EVT_MENU(IDM_ForumCoH, ConstructFrame::LaunchForumCoH)
-	EVT_MENU(IDM_RDNWikiNew, ConstructFrame::LaunchNewRDNWiki)
+	// Keyboard shortcuts, mapped through the accelerator table in the constructor.
+	EVT_MENU(IDM_SaveActive, ConstructFrame::OnSaveActive)
+	EVT_MENU(IDM_CloseActiveTab, ConstructFrame::OnCloseActiveTab)
+	EVT_MENU(IDM_NextTab, ConstructFrame::OnNextTab)
 
-	EVT_MENU(IDM_LuaRef, ConstructFrame::LaunchLuaRef)
-	EVT_MENU(IDM_RDNWiki, ConstructFrame::LaunchRDNWiki)
-	EVT_MENU(IDM_KresjahWiki, ConstructFrame::LaunchKresjahWiki)
 	EVT_SPLITTER_SASH_POS_CHANGED(IDC_Splitter, ConstructFrame::OnSashMove)
 
 	EVT_CLOSE(ConstructFrame::OnCloseWindow)
@@ -121,16 +129,114 @@ void ConstructFrame::OnOpenSga(wxCommandEvent& event)
 	DoLoadSga();
 }
 
+namespace
+{
+	void _AddConfiguredFolder(wxArrayString& aFolders, wxString (*pGetter)())
+	{
+		try
+		{
+			wxString sFolder = pGetter();
+			if(!sFolder.IsEmpty())
+			{
+				aFolders.Add(sFolder);
+			}
+		}
+		catch(CRainmanException* pE)
+		{
+			pE->destroy();
+		}
+	}
+}
+
+wxString ConstructFrame::FindRelicTool(const wxString& sExeName, bool bIsInModTools) const
+{
+	wxArrayString aFolders;
+	if(!m_sModuleFile.IsEmpty())
+	{
+		wxString sModFolder = m_sModuleFile.BeforeLast('\\');
+		if(bIsInModTools)
+		{
+			aFolders.Add(sModFolder + wxT("\\ModTools"));
+			aFolders.Add(sModFolder);
+		}
+		else
+		{
+			aFolders.Add(sModFolder);
+			aFolders.Add(sModFolder + wxT("\\ModTools"));
+		}
+	}
+	_AddConfiguredFolder(aFolders, &ConfGetDoWFolder);
+	_AddConfiguredFolder(aFolders, &ConfGetDCFolder);
+	_AddConfiguredFolder(aFolders, &ConfGetSSFolder);
+	_AddConfiguredFolder(aFolders, &ConfGetCoHFolder);
+	_AddConfiguredFolder(aFolders, &ConfGetModToolsFolder);
+
+	for(size_t i = 0; i < aFolders.GetCount(); ++i)
+	{
+		wxString sFolder = aFolders[i];
+		if(sFolder.IsEmpty())
+		{
+			continue;
+		}
+		if(sFolder.Last() != wxT('\\') && sFolder.Last() != wxT('/'))
+		{
+			sFolder.Append(wxT("\\"));
+		}
+		if(wxFileExists(sFolder + sExeName))
+		{
+			return sFolder + sExeName;
+		}
+	}
+	return wxString();
+}
+
+void ConstructFrame::UpdateRelicToolsMenu()
+{
+	struct _tTool
+	{
+		int iId;
+		const wxChar* sExeName;
+		bool bIsInModTools;
+	};
+	static const _tTool aTools[] =
+	{
+		{ IDM_AttributeEditor, wxT("AttributeEditor.exe"), false },
+		{ IDM_AudioEditor, wxT("AudioEditor.exe"), false },
+		{ IDM_ChunkyViewer, wxT("ChunkyViewer.exe"), false },
+		{ IDM_FXTool, wxT("FxTool.exe"), false },
+		{ IDM_MissionEditor, wxT("W40kME.exe"), true },
+		{ IDM_ModPackager, wxT("ModPackager.exe"), false },
+		{ IDM_ObjectEditor, wxT("ObjectEditor.exe"), false },
+	};
+
+	wxMenuBar* pMenuBar = GetMenuBar();
+	if(!pMenuBar)
+	{
+		return;
+	}
+	for(size_t i = 0; i < sizeof(aTools) / sizeof(aTools[0]); ++i)
+	{
+		wxMenuItem* pItem = pMenuBar->FindItem(aTools[i].iId);
+		if(pItem)
+		{
+			// Disabling the entry is friendlier than a menu item that does nothing.
+			pItem->Enable(!FindRelicTool(aTools[i].sExeName, aTools[i].bIsInModTools).IsEmpty());
+		}
+	}
+}
+
 void ConstructFrame::LaunchTool(wxString sExeName, bool bIsInModTools)
 {
-	wxString sCommand, sFolder;
-	sFolder = m_sModuleFile.BeforeLast('\\');
-	if(bIsInModTools) sFolder.Append(wxT("\\ModTools"));
-	sFolder.Append(wxT("\\"));
-	sCommand = sFolder;
-	sCommand.Append(sExeName);
-
-	ShellExecute((HWND)TheConstruct->GetHandle(), wxT("open"), sCommand, wxT(""), sFolder, 3);
+	wxString sTool = FindRelicTool(sExeName, bIsInModTools);
+	if(sTool.IsEmpty())
+	{
+		wxMessageBox(wxString::Format(AppStr(relictool_missing), sExeName), AppStr(app_title),
+			wxOK | wxICON_ERROR, this);
+		UpdateRelicToolsMenu();
+		return;
+	}
+	wxString sFolder = sTool.BeforeLast('\\');
+	ShellExecute((HWND)TheConstruct->GetHandle(), wxT("open"), sTool, wxT(""), sFolder, 3);
 }
 
 CRgdHashTable* ConstructFrame::GetRgdHashTable()
@@ -221,37 +327,9 @@ void ConstructFrame::LaunchDonate(wxCommandEvent& event)
 	LaunchURL(wxT("https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=corsix%40gmail%2ecom&item_name=Donation%20toward%20Corsix%27s%%20Mod%20Studio&no_shipping=1&return=http%3a%2f%2fwww%2ecorsix%2eorg%2fgo%2ephp%3fdonate_thankyou&cancel_return=http%3a%2f%2fwww%2ecorsix%2eorg%2f&no_note=1&cn=Optional%20Message&tax=0&currency_code=GBP&bn=PP%2dDonationsBF&charset=UTF%2d8"));
 }
 
-void ConstructFrame::LaunchLuaRef(wxCommandEvent& event)
+void ConstructFrame::LaunchProjectPage(wxCommandEvent& event)
 { UNUSED(event);
-	LaunchURL(wxT("http://dowmodstudio.gamemod.net/luaref/index.php"));
-}
-
-
-void ConstructFrame::LaunchForumDoW(wxCommandEvent& event)
-{ UNUSED(event);
-	LaunchURL(wxT("http://forums.relicnews.com/forumdisplay.php?f=96"));
-}
-
-
-void ConstructFrame::LaunchForumCoH(wxCommandEvent& event)
-{ UNUSED(event);
-	LaunchURL(wxT("http://forums.relicnews.com/forumdisplay.php?f=189"));
-}
-
-
-void ConstructFrame::LaunchNewRDNWiki(wxCommandEvent& event)
-{ UNUSED(event);
-	LaunchURL(wxT("http://wiki.relicrank.com/"));
-}
-
-void ConstructFrame::LaunchKresjahWiki(wxCommandEvent& event)
-{ UNUSED(event);
-	LaunchURL(wxT("http://astartes.vorbereitungstagung.de/ModdingDocs/doku.php?id=wiki:start"));
-}
-
-void ConstructFrame::LaunchRDNWiki(wxCommandEvent& event)
-{ UNUSED(event);
-	LaunchURL(wxT("http://www.relic.com/rdn/wiki/RDNWikiHome"));
+	LaunchURL(wxT("https://github.com/IgorTheLight/CorsixsModStudio"));
 }
 
 void ConstructFrame::LaunchRelicAttributeEditor(wxCommandEvent& event)
@@ -484,10 +562,10 @@ ConstructFrame::ConstructFrame(const wxString& sTitle, const wxPoint& oPos, cons
 	m_pRgdHashTable = 0;
 	m_sRgdHashCustomOut = 0;
 
-	// Load Squish
-	if(!oSquishLibrary.Load(AppStr(app_squishfile)))
+	// Load the bundled DXT codec used by Rainman for RGT texture operations.
+	if(!oSquishLibrary.Load(AppStr(app_squishfile), wxDL_QUIET))
 	{
-		::wxMessageBox(wxT("The squish library could not be loaded; some RGT features may not be available"), wxT("Error") , wxICON_ERROR);
+		::wxMessageBox(wxT("The Squish DXT codec could not be loaded; RGT texture compression and decompression will not work."), wxT("Error"), wxICON_ERROR);
 	}
 
 	// Load lua 5.1.2
@@ -510,7 +588,6 @@ ConstructFrame::ConstructFrame(const wxString& sTitle, const wxPoint& oPos, cons
 	m_vTools.push_back(new CRefreshFilesTool);
 	m_vTools.push_back(new CMakeLuaInheritTree);
 	m_vTools.push_back(new CAESetupTool);
-	m_vTools.push_back(new CRedButtonTool);
 
 	// Make Splitter Window
 	m_pSplitter = new wxSplitterWindow(this, IDC_Splitter);
@@ -525,7 +602,7 @@ ConstructFrame::ConstructFrame(const wxString& sTitle, const wxPoint& oPos, cons
 	// Make Menus
 	// Make file menu
     wxMenu *pMenu_File = new wxMenu;
-    pMenu_File->Append( wxID_NEW, AppStr(new_mod_menu), AppStr(new_mod) );
+	pMenu_File->Append( IDM_NewMod, AppStr(new_mod_menu), AppStr(new_mod) );
 	pMenu_File->Append( IDM_LoadModDoWWA, AppStr(open_mod_menu), AppStr(open_mod_help) );
 	pMenu_File->Append( IDM_LoadModDC, AppStr(open_moddc_menu), AppStr(open_moddc_help) );
 	pMenu_File->Append( IDM_LoadModSS, AppStr(open_modss_menu), AppStr(open_modss_help) );
@@ -585,16 +662,9 @@ ConstructFrame::ConstructFrame(const wxString& sTitle, const wxPoint& oPos, cons
 	// Make help menu
 	wxMenu *pMenu_Help = new wxMenu;
 	pMenu_Help->Append( wxID_HELP_CONTENTS, AppStr(help_index_menu), AppStr(help_index_help) );
-	
-	pMenu_Help->Append( IDM_RDNWikiNew, AppStr(rdn_new_wiki_menu), AppStr(rdn_new_wiki_help) );
-	pMenu_Help->Append( IDM_ForumDoW, AppStr(forum_dow_menu), AppStr(forum_dow_help) );
-	pMenu_Help->Append( IDM_ForumCoH, AppStr(forum_coh_menu), AppStr(forum_coh_help) );
-
-	pMenu_Help->Append( IDM_RDNWiki, AppStr(rdn_wiki_menu), AppStr(rdn_wiki_help) );
-	pMenu_Help->Append( IDM_LuaRef, AppStr(lua_ref_menu), AppStr(lua_ref_help) );
-	pMenu_Help->Append( IDM_KresjahWiki, AppStr(kresjah_wiki_menu), AppStr(kresjah_wiki_help) );
+	pMenu_Help->Append( IDM_ProjectPage, AppStr(project_page_menu), AppStr(project_page_help) );
 	pMenu_Help->AppendSeparator();
-	pMenu_Help->Append( wxID_ABOUT, AppStr(about_menu), AppStr(about_help) );
+	pMenu_Help->Append( IDM_About, AppStr(about_menu), AppStr(about_help) );
 	pMenu_Help->Append( IDM_Credits, AppStr(credits_menu), AppStr(credits_help) );
 	pMenu_Help->Append( IDM_HideDonate, AppStr(hidedonate_menu), AppStr(hidedonate_help) );
  
@@ -608,9 +678,20 @@ ConstructFrame::ConstructFrame(const wxString& sTitle, const wxPoint& oPos, cons
     SetMenuBar( pMenuBar );
 	pMenuBar->EnableTop(1, FALSE);
 
+	// Common editor shortcuts. They dispatch their own command ids rather than
+	// stock wx ids so they cannot collide with the editors' wxID_SAVE buttons.
+	wxAcceleratorEntry aAccelerators[3];
+	aAccelerators[0].Set(wxACCEL_CTRL, (int)'S', IDM_SaveActive);
+	aAccelerators[1].Set(wxACCEL_CTRL, (int)'W', IDM_CloseActiveTab);
+	aAccelerators[2].Set(wxACCEL_CTRL, WXK_TAB, IDM_NextTab);
+	SetAcceleratorTable(wxAcceleratorTable(3, aAccelerators));
+
 	// Make Statusbar
     CreateStatusBar();
     SetStatusText( AppStr(statusbar_message_default) );
+
+	// Disable Relic tool entries whose executables are not installed.
+	UpdateRelicToolsMenu();
 }
 
 void ConstructFrame::DoNewMod()
@@ -621,6 +702,120 @@ void ConstructFrame::DoNewMod()
 		DoLoadMod(oNewMod.GetPath());
 	}
 }
+
+void ConstructFrame::OnNewMod(wxCommandEvent& event)
+{ UNUSED(event);
+	DoNewMod();
+}
+
+void ConstructFrame::LaunchAbout(wxCommandEvent& event)
+{ UNUSED(event);
+	wxAboutDialogInfo info;
+	info.SetName(AppStr(app_title));
+	info.SetVersion(AppStr(app_version));
+	info.SetDescription(wxT("Modding tools for Dawn of War and Company of Heroes."));
+	info.SetWebSite(wxT("https://modstudio.corsix.org/"));
+	info.SetCopyright(wxT("Copyright (C) 2005-2007 Corsix and the Rainman development team."));
+	wxAboutBox(info);
+}
+
+void ConstructFrame::OnModuleProperties(wxCommandEvent& event)
+{ UNUSED(event);
+	for(size_t i = 0; i < m_pTabs->GetPageCount(); ++i)
+	{
+		if(dynamic_cast<frmModule*>(m_pTabs->GetPage(i)))
+		{
+			m_pTabs->SetSelection(i);
+			return;
+		}
+	}
+	// The tab can be closed with its X button; bring it back on demand.
+	m_pTabs->AddPage(new frmModule(m_pTabs, -1), AppStr(mod_tabname).Append(wxString(wxT(" ["))).Append(m_sModuleFile.AfterLast('\\')).Append(wxT("]")), true);
+}
+
+void ConstructFrame::OnSaveActive(wxCommandEvent& event)
+{ UNUSED(event);
+	int iSelection = m_pTabs->GetSelection();
+	if(iSelection == wxNOT_FOUND)
+	{
+		return;
+	}
+	wxWindow* pPage = m_pTabs->GetPage(iSelection);
+	if(!pPage)
+	{
+		return;
+	}
+	// Ask the editor by type: synthesising a button event would be picked up by
+	// whichever control on the page happens to share that numeric id.
+	if(frmRGDEditor* pEditor = dynamic_cast<frmRGDEditor*>(pPage))
+	{
+		pEditor->DoSave();
+		return;
+	}
+	if(frmUCSEditor* pEditor = dynamic_cast<frmUCSEditor*>(pPage))
+	{
+		// OnSaveFile keeps the read-only check that DoSave does not.
+		wxCommandEvent oUnused;
+		pEditor->OnSaveFile(oUnused);
+		return;
+	}
+	if(frmScarEditor* pEditor = dynamic_cast<frmScarEditor*>(pPage))
+	{
+		pEditor->DoSave();
+		return;
+	}
+	if(frmRgmMaterialEditor* pEditor = dynamic_cast<frmRgmMaterialEditor*>(pPage))
+	{
+		wxCommandEvent oUnused;
+		pEditor->OnSave(oUnused);
+		return;
+	}
+	if(frmModule* pEditor = dynamic_cast<frmModule*>(pPage))
+	{
+		wxCommandEvent oUnused;
+		pEditor->OnSave(oUnused);
+	}
+}
+
+void ConstructFrame::OnCloseActiveTab(wxCommandEvent& event)
+{ UNUSED(event);
+	int iSelection = m_pTabs->GetSelection();
+	if(iSelection == wxNOT_FOUND)
+	{
+		return;
+	}
+	wxWindow* pPage = m_pTabs->GetPage(iSelection);
+	if(!pPage)
+	{
+		return;
+	}
+	// Same prompt as clicking the tab's X: give the page a chance to save.
+	wxCloseEvent oClose(wxEVT_CLOSE_WINDOW);
+	oClose.SetCanVeto(true);
+	pPage->GetEventHandler()->ProcessEvent(oClose);
+	if(oClose.GetVeto())
+	{
+		return;
+	}
+	m_pTabs->DeletePage(iSelection);
+}
+
+void ConstructFrame::OnNextTab(wxCommandEvent& event)
+{ UNUSED(event);
+	size_t iCount = m_pTabs->GetPageCount();
+	if(iCount < 2)
+	{
+		return;
+	}
+	int iSelection = m_pTabs->GetSelection();
+	if(iSelection == wxNOT_FOUND)
+	{
+		m_pTabs->SetSelection(0);
+		return;
+	}
+	m_pTabs->SetSelection(((size_t)iSelection + 1) % iCount);
+}
+
 #define FN_MOD_TOOL(N) void ConstructFrame::LaunchModTool ## N(wxCommandEvent& event) {UNUSED(event); m_vTools[N - 1]->DoAction();}
 FN_MOD_TOOL(1)
 FN_MOD_TOOL(2)
@@ -693,54 +888,125 @@ const wxString& ConstructFrame::GetModuleFile() const
 	return m_sModuleFile;
 }
 
-void ConstructFrame::OnCloseMod(wxCommandEvent& event)
+bool ConstructFrame::ConfirmCloseTabs(bool bCanVeto)
 {
+	for(size_t i = 0; i < m_pTabs->GetPageCount(); ++i)
+	{
+		wxCloseEvent e2(wxEVT_CLOSE_WINDOW);
+		e2.SetCanVeto(bCanVeto);
+		m_pTabs->GetPage(i)->GetEventHandler()->ProcessEvent(e2);
+		if(e2.GetVeto())
+		{
+			return false;
+		}
+	}
+	return true;
+}
+
+void ConstructFrame::OnClosePage(wxAuiNotebookEvent& event)
+{
+	// wxAuiNotebook removes a page by itself when its X is clicked and does not
+	// send a close event, which used to discard unsaved edits without asking.
+	wxWindow* pPage = m_pTabs->GetPage(event.GetSelection());
+	if(pPage)
+	{
+		wxCloseEvent e2(wxEVT_CLOSE_WINDOW);
+		e2.SetCanVeto(true);
+		pPage->GetEventHandler()->ProcessEvent(e2);
+		if(e2.GetVeto())
+		{
+			event.Veto();
+		}
+	}
+}
+
+void ConstructFrame::OnCloseMod(wxCommandEvent& event)
+{ UNUSED(event);
+	// Ask every editor to save first: closing the mod deletes all its tabs.
+	if(!ConfirmCloseTabs(true))
+	{
+		return;
+	}
 	SetModule(0);
 }
 
 void ConstructFrame::SetModule(CModuleFile* pMod)
 {
-	if(m_pModule) delete m_pModule;
+	if(m_pModule == pMod)
+	{
+		return;
+	}
+
+	// The tabs and the file tree point into the module's file map (the tree item
+	// data borrows the sMod/sSource strings), so the views have to disappear
+	// before the module they refer to is deleted.
+	if(m_pModule)
+	{
+		if(m_pSplitter->IsSplit())
+		{
+			frmFiles* pFiles = GetFilesList();
+			if(pFiles)
+			{
+				m_pSplitter->Unsplit(pFiles);
+				delete pFiles;
+			}
+		}
+		while(m_pTabs->GetPageCount() > 0)
+		{
+			m_pTabs->DeletePage(0);
+		}
+		delete m_pModule;
+		m_pModule = 0;
+	}
+
 	m_pModule = pMod;
 	if(pMod != 0)
 	{
-		if(!m_pSplitter->IsSplit())
+		GetMenuBar()->GetMenu(0)->Enable(wxID_CLOSE, TRUE);
+		GetMenuBar()->GetMenu(0)->Enable(IDM_LoadModDoWWA, FALSE);
+		GetMenuBar()->GetMenu(0)->Enable(IDM_LoadModDC, FALSE);
+		GetMenuBar()->GetMenu(0)->Enable(IDM_LoadModSS, FALSE);
+		GetMenuBar()->GetMenu(0)->Enable(IDM_LoadModCoH, FALSE);
+		GetMenuBar()->GetMenu(0)->Enable(IDM_LoadSga, FALSE);
+		GetMenuBar()->GetMenu(0)->Enable(IDM_NewMod, FALSE);
+		GetMenuBar()->EnableTop(1, TRUE);
+
+		if(m_pSplitter->IsSplit())
 		{
-			GetMenuBar()->GetMenu(0)->Enable(wxID_CLOSE, TRUE);
-			GetMenuBar()->GetMenu(0)->Enable(IDM_LoadModDoWWA, FALSE);
-			GetMenuBar()->GetMenu(0)->Enable(IDM_LoadModDC, FALSE);
-			GetMenuBar()->GetMenu(0)->Enable(IDM_LoadModSS, FALSE);
-			GetMenuBar()->GetMenu(0)->Enable(IDM_LoadModCoH, FALSE);
-			GetMenuBar()->GetMenu(0)->Enable(IDM_LoadSga, FALSE);
-			GetMenuBar()->GetMenu(0)->Enable(wxID_NEW, FALSE);
-			GetMenuBar()->EnableTop(1, TRUE);
-			frmFiles* pFiles = new frmFiles(m_pSplitter, -1);
-			m_pSplitter->SplitVertically(pFiles, m_pTabs);
-			m_pSplitter->SetSashPosition(TheConfig->Read(AppStr(config_sashposition), 189));
-			pFiles->FillFromIDirectoryTraverser(pMod);
-			m_pTabs->AddPage(new frmModule(m_pTabs, -1), AppStr(mod_tabname).Append(wxString(wxT(" ["))).Append(m_sModuleFile.AfterLast('\\')).Append(wxT("]")), true);
-			while(m_pTabs->GetPageCount() > 1) m_pTabs->DeletePage(0);
-
-			GetMenuBar()->GetMenu(3)->Enable(IDM_PlayCOH, false);
-			GetMenuBar()->GetMenu(3)->Enable(IDM_PlayW40k, false);
-			GetMenuBar()->GetMenu(3)->Enable(IDM_PlayWXP, false);
-			GetMenuBar()->GetMenu(3)->Enable(IDM_PlayDC, false);
-			GetMenuBar()->GetMenu(3)->Enable(IDM_PlaySS, false);
-
-			switch(pMod->GetModuleType())
+			// Should not happen, but never split twice.
+			frmFiles* pStaleFiles = GetFilesList();
+			if(pStaleFiles)
 			{
-			case CModuleFile::MT_DawnOfWar:
-				GetMenuBar()->GetMenu(3)->Enable(IDM_PlayW40k, true);
-				GetMenuBar()->GetMenu(3)->Enable(IDM_PlayWXP, true);
-				GetMenuBar()->GetMenu(3)->Enable(IDM_PlayDC, true);
-				GetMenuBar()->GetMenu(3)->Enable(IDM_PlaySS, true);
-				break;
-
-			case CModuleFile::MT_CompanyOfHeroes:
-			case CModuleFile::MT_CompanyOfHeroesEarly:
-				GetMenuBar()->GetMenu(3)->Enable(IDM_PlayCOH, true);
-				break;
+				m_pSplitter->Unsplit(pStaleFiles);
+				delete pStaleFiles;
 			}
+		}
+		frmFiles* pFiles = new frmFiles(m_pSplitter, -1);
+		m_pSplitter->SplitVertically(pFiles, m_pTabs);
+		m_pSplitter->SetSashPosition(TheConfig->Read(AppStr(config_sashposition), 189));
+		pFiles->FillFromIDirectoryTraverser(pMod);
+		m_pTabs->AddPage(new frmModule(m_pTabs, -1), AppStr(mod_tabname).Append(wxString(wxT(" ["))).Append(m_sModuleFile.AfterLast('\\')).Append(wxT("]")), true);
+		while(m_pTabs->GetPageCount() > 1) m_pTabs->DeletePage(0);
+
+		GetMenuBar()->GetMenu(3)->Enable(IDM_PlayCOH, false);
+		GetMenuBar()->GetMenu(3)->Enable(IDM_PlayW40k, false);
+		GetMenuBar()->GetMenu(3)->Enable(IDM_PlayWXP, false);
+		GetMenuBar()->GetMenu(3)->Enable(IDM_PlayDC, false);
+		GetMenuBar()->GetMenu(3)->Enable(IDM_PlaySS, false);
+
+		switch(pMod->GetModuleType())
+		{
+		case CModuleFile::MT_DawnOfWar:
+			GetMenuBar()->GetMenu(3)->Enable(IDM_PlayW40k, true);
+			GetMenuBar()->GetMenu(3)->Enable(IDM_PlayWXP, true);
+			GetMenuBar()->GetMenu(3)->Enable(IDM_PlayDC, true);
+			GetMenuBar()->GetMenu(3)->Enable(IDM_PlaySS, true);
+			break;
+
+		case CModuleFile::MT_CompanyOfHeroes:
+		case CModuleFile::MT_CompanyOfHeroesEarly:
+			GetMenuBar()->GetMenu(3)->Enable(IDM_PlayCOH, true);
+			break;
 		}
 	}
 	else
@@ -752,25 +1018,22 @@ void ConstructFrame::SetModule(CModuleFile* pMod)
 		GetMenuBar()->GetMenu(3)->Enable(IDM_PlaySS, false);
 
 		m_sModuleFile = wxT("");
-		if(m_pSplitter->IsSplit())
+		GetMenuBar()->GetMenu(0)->Enable(wxID_CLOSE, FALSE);
+		GetMenuBar()->GetMenu(0)->Enable(IDM_LoadModDoWWA, TRUE);
+		GetMenuBar()->GetMenu(0)->Enable(IDM_LoadModDC, TRUE);
+		GetMenuBar()->GetMenu(0)->Enable(IDM_LoadModSS, TRUE);
+		GetMenuBar()->GetMenu(0)->Enable(IDM_LoadModCoH, TRUE);
+		GetMenuBar()->GetMenu(0)->Enable(IDM_LoadSga, TRUE);
+		GetMenuBar()->GetMenu(0)->Enable(IDM_NewMod, TRUE);
+		GetMenuBar()->EnableTop(1, FALSE);
+
+		if(m_pTabs->GetPageCount() == 0)
 		{
-			GetMenuBar()->GetMenu(0)->Enable(wxID_CLOSE, FALSE);
-			GetMenuBar()->GetMenu(0)->Enable(IDM_LoadModDoWWA, TRUE);
-			GetMenuBar()->GetMenu(0)->Enable(IDM_LoadModDC, TRUE);
-			GetMenuBar()->GetMenu(0)->Enable(IDM_LoadModSS, TRUE);
-			GetMenuBar()->GetMenu(0)->Enable(IDM_LoadModCoH, TRUE);
-			GetMenuBar()->GetMenu(0)->Enable(IDM_LoadSga, TRUE);
-			GetMenuBar()->GetMenu(0)->Enable(wxID_NEW, TRUE);
-			GetMenuBar()->EnableTop(1, FALSE);
-
-			m_pTabs->AddPage(new frmWelcome(m_pTabs, -1), AppStr(welcome_tabname), true );
-			while(m_pTabs->GetPageCount() > 1) m_pTabs->DeletePage(0);
-
-			frmFiles* pFiles = GetFilesList();
-			m_pSplitter->Unsplit(pFiles);
-			delete pFiles;
+			m_pTabs->AddPage(new frmWelcome(m_pTabs, -1), AppStr(welcome_tabname), true);
 		}
 	}
+
+	UpdateRelicToolsMenu();
 }
 
 void __cdecl ConstructFrame::LoadModCallback(const char* sMsg, void* pTag)
@@ -839,6 +1102,10 @@ void ConstructFrame::DoLoadSga()
 
 	if(pFileDialog->ShowModal() == wxID_OK)
 	{
+		if(!CheckAnsiPath(pFileDialog->GetPath(), this))
+		{
+			return;
+		}
 		m_pLoadingForm = new frmLoading(AppStr(mod_loading));
 		m_pLoadingForm->Show(TRUE);
 		m_pLoadingForm->SetMessage(wxString(wxT("Initializing")));
@@ -923,6 +1190,13 @@ void ConstructFrame::DoLoadMod(wxString sPath, eLoadModGames eGame)
 	}
 	if(sPath != wxT("") || pFileDialog->ShowModal() == wxID_OK)
 	{
+		// The module file is handed to ANSI file APIs further down, so refuse a
+		// path the system code page cannot represent instead of loading nothing.
+		if(!CheckAnsiPath(pFileDialog ? pFileDialog->GetPath() : sPath, this))
+		{
+			delete pFileDialog;
+			return;
+		}
 		if(sPath == wxT(""))
 		{
 			wxString sAppFolder = pFileDialog->GetPath();
@@ -1050,16 +1324,10 @@ void ConstructFrame::OnQuit(wxCommandEvent& event)
 
 void ConstructFrame::OnCloseWindow(wxCloseEvent& event)
 {
-	for(size_t i = 0; i < m_pTabs->GetPageCount(); ++i)
+	if(!ConfirmCloseTabs(event.CanVeto()))
 	{
-		wxCloseEvent e2(wxEVT_CLOSE_WINDOW);
-		e2.SetCanVeto(event.CanVeto());
-		m_pTabs->GetPage(i)->GetEventHandler()->ProcessEvent(e2);
-		if(e2.GetVeto())
-		{
-			event.Veto();
-			return;
-		}
+		event.Veto();
+		return;
 	}
 	this->Destroy();
 }

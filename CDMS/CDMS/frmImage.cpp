@@ -254,6 +254,10 @@ void frmImageViewer::OnSave(wxCommandEvent& event)
 	wxString sNewFile = m_sFilename.BeforeLast('.');
 	sNewFile.Append(wxT("."));
 	sNewFile.Append(m_pSaveFileExt->GetStringSelection().Lower());
+	if(!CheckAnsiPath(sNewFile, this))
+	{
+		return;
+	}
 
 	char* saNewFile = wxStringToAscii(sNewFile);
 	char* saDir = strdup(saNewFile), *pSlash;

@@ -7,7 +7,7 @@
 //
 // Generated from the TEXTINCLUDE 2 resource.
 //
-#include "afxres.h"
+#include <winres.h>
 
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
@@ -133,8 +133,8 @@ IDI_DOWN                ICON                    "ico00002.ico"
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,5,5,0
- PRODUCTVERSION 0,5,5,0
+ FILEVERSION 0,5,6,0
+ PRODUCTVERSION 0,5,6,0
  FILEFLAGSMASK 0x17L
 #ifdef _DEBUG
  FILEFLAGS 0x3L
@@ -152,12 +152,12 @@ BEGIN
             VALUE "Comments", "Uses the Rainman library, copyright © 2005-2007 Corsix & the Rainman development team. Uses squish library copyright 2006 Simon Brown. Uses LUA libraries copyright PUC-Rio."
             VALUE "CompanyName", "www.corsix.org"
             VALUE "FileDescription", "Corsix's Dawn of War, Winter Assault, Dark Crusade, Soulstorm, Company of Heroes and Opposing Fronts Mod Studio"
-            VALUE "FileVersion", "0, 5, 5, 0"
+            VALUE "FileVersion", "0, 5, 6, 0"
             VALUE "InternalName", "CDMS"
             VALUE "LegalCopyright", "Licensed under the GNU GPL (see license.txt for details)"
             VALUE "OriginalFilename", "ModStudio.exe"
             VALUE "ProductName", "Corsix's Mod Studio"
-            VALUE "ProductVersion", "0, 5, 5, 0"
+            VALUE "ProductVersion", "0, 5, 6, 0"
         END
     END
     BLOCK "VarFileInfo"

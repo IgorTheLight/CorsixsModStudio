@@ -26,11 +26,60 @@
 #include <wx/sysopt.h>
 #include <wx/image.h>
 #include "Common.h"
+#include <windows.h>
+#include <wchar.h>
 
 IMPLEMENT_APP(CDMSApplication)
 
+namespace
+{
+	// Data files the program cannot run without. config.txt is deliberately not
+	// listed: it is created on first exit.
+	bool _CollectMissingDataFiles(wxString& sMissing)
+	{
+		static const wxChar* const apRequired[] = {
+			wxT("lua.dat"),
+			wxT("bfx.dat"),
+			wxT("scardoc.dat"),
+			wxT("dictionaries\\RGD_DIC.TXT"),
+		};
+		const wxString sFolder = AppStr(app_filespath);
+		for(size_t i = 0; i < sizeof(apRequired) / sizeof(apRequired[0]); ++i)
+		{
+			if(!wxFileExists(sFolder + apRequired[i]))
+			{
+				sMissing.Append(wxT("\n  - ")).Append(sFolder).Append(apRequired[i]);
+			}
+		}
+		return sMissing.IsEmpty();
+	}
+}
+
 bool CDMSApplication::OnInit()
 {
+	// The application stores its data under a path relative to its executable.
+	wchar_t sExecutablePath[MAX_PATH];
+	DWORD cchExecutablePath = GetModuleFileNameW(NULL, sExecutablePath, MAX_PATH);
+	if(cchExecutablePath > 0 && cchExecutablePath < MAX_PATH)
+	{
+		wchar_t* pLastSlash = wcsrchr(sExecutablePath, L'\\');
+		if(pLastSlash)
+		{
+			*pLastSlash = L'\0';
+			SetCurrentDirectoryW(sExecutablePath);
+		}
+	}
+
+	// Refuse to start from a half-copied installation. The alternative is a
+	// chain of library-error dialogs and a frame that cannot do anything.
+	wxString sMissingDataFiles;
+	if(!_CollectMissingDataFiles(sMissingDataFiles))
+	{
+		wxMessageBox(wxString::Format(AppStr(app_datamissing), wxGetCwd(), sMissingDataFiles),
+			AppStr(app_datamissing_title), wxOK | wxICON_ERROR);
+		return FALSE;
+	}
+
 	wxSystemOptions::SetOption(wxT("msw.remap"), 0);
 
 	wxConfigBase::Set(new wxFileConfig(wxFileInputStream(AppStr(configfile_name))));
@@ -53,7 +102,13 @@ bool CDMSApplication::OnInit()
 
 int CDMSApplication::OnExit()
 {
-	wxFileConfig* pConfig = (wxFileConfig*)wxConfigBase::Get();
+	wxConfigBase* pBase = wxConfigBase::Get(false);
+	if(!pBase)
+	{
+		// Startup was refused before the configuration was opened.
+		return wxApp::OnExit();
+	}
+	wxFileConfig* pConfig = (wxFileConfig*)pBase;
 	pConfig->Save(wxFileOutputStream(AppStr(configfile_name)));
 	return wxApp::OnExit();
 }
@@ -82,6 +137,7 @@ int CDMSApplication::OnRun()
 	catch(...)
 	{
 		_ErrorBox(wxT("Unhandled exception (not from Rainman)"), __FILE__, __LINE__);
+		return -1;
 	}
 #endif
 }

@@ -40,6 +40,11 @@ public:
 	frmModule(wxWindow* parent, wxWindowID id, const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize);
 
 	void OnSize(wxSizeEvent& event);
+	void OnSave(wxCommandEvent& event);
+	void OnCloseWindow(wxCloseEvent& event);
+
+	// Called by the property pages when the user changes a value.
+	void MarkModified();
 
 	enum
 	{
@@ -47,16 +52,22 @@ public:
 		IDP_DataFolders,
 		IDP_DataArchives,
 		IDP_RequiredMods,
-		IDP_CompatibleMods
+		IDP_CompatibleMods,
+		IDC_SaveModule
 	};
 
 protected:
+	bool m_bNeedsSave;
+
+	void DoSave();
+
 	class pgMain : public wxWindow
 	{
 	protected:
 		bool m_bDoneInit;
+		frmModule* m_pOwner;
 	public:
-		pgMain(wxWindow* parent, wxWindowID id, const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize);
+		pgMain(frmModule* pOwner, wxWindow* parent, wxWindowID id, const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize);
 
 		void OnSize(wxSizeEvent& event);
 
@@ -81,6 +92,8 @@ protected:
 		void OnUINameUpdate(wxCommandEvent& event);
 		void OnTextureFEUpdate(wxCommandEvent& event);
 		void OnTextureIconUpdate(wxCommandEvent& event);
+		void OnVersionUpdate(wxCommandEvent& event);
+		void OnVersionHelp(wxCommandEvent& event);
 
 		DECLARE_EVENT_TABLE()
 	};
