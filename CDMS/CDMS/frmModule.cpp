@@ -95,10 +95,6 @@ void frmModule::DoSave()
 		wxMessageBox(AppStr(modsave_nofile), AppStr(rgd_save), wxOK | wxICON_ERROR, this);
 		return;
 	}
-	if(!CheckAnsiPath(sPath, this))
-	{
-		return;
-	}
 	char* saPath = wxStringToAscii(sPath);
 	try
 	{

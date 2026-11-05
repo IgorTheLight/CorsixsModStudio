@@ -139,7 +139,7 @@ void frmSgaMake::OnCancelClick(wxCommandEvent& event)
 void frmSgaMake::OnBrowseInClick(wxCommandEvent& event)
 { UNUSED(event);
 	wxString sDir = wxDirSelector(AppStr(sgapack_dirselect), m_pInDir->GetValue(), 0, wxDefaultPosition, TheConstruct);
-	if(sDir.IsEmpty() || !CheckAnsiPath(sDir, this))
+	if(sDir.IsEmpty())
 	{
 		return;
 	}
@@ -149,7 +149,7 @@ void frmSgaMake::OnBrowseInClick(wxCommandEvent& event)
 void frmSgaMake::OnBrowseOutClick(wxCommandEvent& event)
 {
 	wxString sOutFile = wxFileSelector(AppStr(sgapack_outselect), wxT(""), m_pOutFile->GetValue(), wxT("sga"), AppStr(sgapack_filter) , wxSAVE | wxOVERWRITE_PROMPT, TheConstruct);
-	if(sOutFile.IsEmpty() || !CheckAnsiPath(sOutFile, this))
+	if(sOutFile.IsEmpty())
 	{
 		return;
 	}

@@ -426,6 +426,8 @@ frmFiles::frmFiles(wxWindow* parent, wxWindowID id, const wxPoint& pos, const wx
 	m_pTabs = new wxAuiNotebook(this, -1, wxPoint(0,0), wxDefaultSize, (wxAUI_NB_DEFAULT_STYLE | wxNO_BORDER) & (~(wxAUI_NB_CLOSE_BUTTON | wxAUI_NB_CLOSE_ON_ACTIVE_TAB | wxAUI_NB_CLOSE_ON_ALL_TABS | wxAUI_NB_TAB_EXTERNAL_MOVE | wxAUI_NB_TAB_SPLIT | wxAUI_NB_TAB_MOVE)) );
 
 	m_pTabs->AddPage(m_pTree = new wxTreeCtrl(m_pTabs, IDC_FilesTree, wxDefaultPosition, wxDefaultSize, wxTR_HIDE_ROOT | wxTR_HAS_BUTTONS | wxTR_LINES_AT_ROOT), AppStr(file_filestabname));
+	// A single click on an item expands/collapses it, not only the + button.
+	m_pTree->Connect(wxEVT_LEFT_DOWN, wxMouseEventHandler(frmFiles::OnTreeLeftDown), NULL, this);
 	m_pTabs->AddPage(m_pTools = new wxListCtrl(m_pTabs, IDC_ToolsList, wxDefaultPosition, wxDefaultSize, wxLC_ICON | wxLC_SINGLE_SEL), AppStr(file_toolstabname));
 
 	m_pTabs->AddPage(m_pLuaTree = new frmLuaInheritTree(m_pTabs, wxID_ANY), wxT("Lua"));
@@ -648,4 +650,13 @@ bool frmFiles::_FillPartialFromIDirectoryTraverserIIterator(wxTreeItemId oParent
 		while((eNextError = pChildren->VNextItem()) == IDirectoryTraverser::IIterator::E_OK);
 	}
 	return true;
+}
+
+void frmFiles::OnTreeLeftDown(wxMouseEvent& event)
+{
+	// Clicking the item itself expands/collapses it, like clicking the + button.
+	if(!TreeClickTogglesItem(m_pTree, event))
+	{
+		event.Skip();
+	}
 }

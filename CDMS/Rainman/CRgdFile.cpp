@@ -18,6 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
 #include "CRgdFile.h"
+#include "PathUtil.h"
 #include "CMemoryStore.h"
 #include "..\zLib/zlib.h"
 #include <algorithm>
@@ -49,24 +50,14 @@ struct tLuaTableProtector
 
 static wchar_t* AsciiToUnicode(const char* sAscii)
 {
-	size_t iLen = strlen(sAscii) + 1;
-	wchar_t *pUnicode = CHECK_MEM(new wchar_t[iLen]);
-	for(size_t i = 0; i < iLen; ++i)
-	{
-		pUnicode[i] = (wchar_t)sAscii[i];
-	}
-	return pUnicode;
+	// In-memory strings are UTF-8, so this is a real decode, not a widening.
+	return PathUtil_Utf8ToWide(sAscii);
 }
 
 static char* UnicodeToAscii(const wchar_t* pUnicode)
 {
-	size_t iLen = wcslen(pUnicode) + 1;
-	char *sAscii = CHECK_MEM(new char[iLen]);
-	for(size_t i = 0; i < iLen; ++i)
-	{
-		sAscii[i] = (char)pUnicode[i];
-	}
-	return sAscii;
+	// In-memory strings are UTF-8, so this is a real encode, not a narrowing.
+	return PathUtil_WideToUtf8(pUnicode);
 }
 
 static char* mystrdup(const char* sStr)
@@ -1047,12 +1038,24 @@ not_all_numeric:;
 			break;
 		case DT_String:
 			{
-				size_t iL = strlen((**itr).Data.s) + 1;
+				// Back to the ANSI encoding the games read.
+				char* sAnsi = PathUtil_Utf8ToAnsi((**itr).Data.s);
+				size_t iL = strlen(sAnsi) + 1;
 				try
 				{
-					pStream->VWrite(iL, 1, (**itr).Data.s);
+					pStream->VWrite(iL, 1, sAnsi);
 				}
-				CATCH_THROW("Output error")
+				catch(CRainmanException* pE)
+				{
+					delete[] sAnsi;
+					throw new CRainmanException(__FILE__, __LINE__, "Output error", pE);
+				}
+				catch(...)
+				{
+					delete[] sAnsi;
+					throw;
+				}
+				delete[] sAnsi;
 				iDataLen += iL;
 				break;
 			}
@@ -1224,7 +1227,9 @@ void CRgdFile::_ProcessRawRgdData(IFileStore::IStream *pStream, _RgdEntry *pDest
 				}
 				while(sTmp[iLen - 1]);
 
-				pEntry->Data.s = sTmp;
+				// The file stores ANSI text; the program works in UTF-8.
+				pEntry->Data.s = PathUtil_AnsiToUtf8(sTmp);
+				delete[] sTmp;
 				if(pEntry->iHash == 0x49D60FAE) pDestination->pExt = pEntry;
 			}
 			break;

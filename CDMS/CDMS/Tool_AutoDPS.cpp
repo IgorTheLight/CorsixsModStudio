@@ -470,7 +470,7 @@ static size_t fwrites(FILE* f, const char* s)
 
 void AutoDPS::AutoDPS_OutputHTML(AutoDPS_Internal::tAutoDPS_Package* pPackage, const char* sOutFile)
 {
-	FILE* f = fopen(sOutFile, "w");
+	FILE* f = FopenUtf8(sOutFile, "w");
 	
 	if(f == 0) throw new CModStudioException(0, __FILE__, __LINE__, "Unable to open file \'%s\' for writing", sOutFile);
 

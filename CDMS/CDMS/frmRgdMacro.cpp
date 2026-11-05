@@ -624,7 +624,7 @@ void frmRgdMacro::OnSaveClick(wxCommandEvent& event)
 	if(m_bShowingOutput)
 	{
 		wxString sFilename = wxFileSelector(AppStr(rgdmacro_saveoutputmsg),AppStr(app_macrospath),wxT(""),wxT("txt"),AppStr(rgdmacro_saveoutputfilter),wxSAVE|wxOVERWRITE_PROMPT);
-		if(!sFilename.IsEmpty() && CheckAnsiPath(sFilename, this))
+		if(!sFilename.IsEmpty())
 		{
 			wxFile oFile;
 			oFile.Open(sFilename, wxFile::write);
@@ -636,7 +636,7 @@ void frmRgdMacro::OnSaveClick(wxCommandEvent& event)
 	else
 	{
 		wxString sFilename = wxFileSelector(AppStr(rgdmacro_savemacromsg),AppStr(app_macrospath),wxT(""),wxT("lua"),AppStr(rgdmacro_loadmacrofilter),wxSAVE|wxOVERWRITE_PROMPT);
-		if(!sFilename.IsEmpty() && CheckAnsiPath(sFilename, this))
+		if(!sFilename.IsEmpty())
 		{
 			wxFile oFile;
 			oFile.Open(sFilename, wxFile::write);
@@ -650,7 +650,7 @@ void frmRgdMacro::OnSaveClick(wxCommandEvent& event)
 void frmRgdMacro::OnLoadClick(wxCommandEvent& event)
 { UNUSED(event);
 	wxString sFilename = wxFileSelector(AppStr(rgdmacro_loadmacromsg),AppStr(app_macrospath),wxT(""),wxT("lua"),AppStr(rgdmacro_loadmacrofilter),wxOPEN|wxFILE_MUST_EXIST);
-	if(!sFilename.IsEmpty() && CheckAnsiPath(sFilename, this))
+	if(!sFilename.IsEmpty())
 	{
 		wxFile oFile;
 		oFile.Open(sFilename);

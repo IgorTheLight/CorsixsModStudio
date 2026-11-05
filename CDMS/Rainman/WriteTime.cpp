@@ -30,6 +30,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include <sys/types.h>
 #include <sys/stat.h>
 #include "Exception.h"
+#include "PathUtil.h"
 
 tLastWriteTime GetLastWriteTime(const char* sFile)
 {
@@ -42,7 +43,13 @@ tLastWriteTime GetLastWriteTime(const char* sFile)
 	*/
 
 	// Open the file at a low level
+#ifndef RAINMAN_GNUC
+	wchar_t* wsFile = PathUtil_Utf8ToWide(sFile);
+	int iH = _wopen(wsFile, _O_BINARY | _O_RDONLY);
+	delete[] wsFile;
+#else
 	int iH = _open(sFile, _O_BINARY | _O_RDONLY);
+#endif
 	if(iH == -1) throw new CRainmanException(0, __FILE__, __LINE__, "_open gave \'%s\' opening \'%s\'", strerror(errno), sFile);
 	struct _stat s;
 

@@ -1102,10 +1102,6 @@ void ConstructFrame::DoLoadSga()
 
 	if(pFileDialog->ShowModal() == wxID_OK)
 	{
-		if(!CheckAnsiPath(pFileDialog->GetPath(), this))
-		{
-			return;
-		}
 		m_pLoadingForm = new frmLoading(AppStr(mod_loading));
 		m_pLoadingForm->Show(TRUE);
 		m_pLoadingForm->SetMessage(wxString(wxT("Initializing")));
@@ -1192,11 +1188,6 @@ void ConstructFrame::DoLoadMod(wxString sPath, eLoadModGames eGame)
 	{
 		// The module file is handed to ANSI file APIs further down, so refuse a
 		// path the system code page cannot represent instead of loading nothing.
-		if(!CheckAnsiPath(pFileDialog ? pFileDialog->GetPath() : sPath, this))
-		{
-			delete pFileDialog;
-			return;
-		}
 		if(sPath == wxT(""))
 		{
 			wxString sAppFolder = pFileDialog->GetPath();

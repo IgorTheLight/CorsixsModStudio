@@ -491,6 +491,8 @@ frmRGDEditor::frmRGDEditor(wxTreeItemId& oFileParent, wxString sFilename, wxWind
 	pTopSizer->Add(pButtonSizer, 0, wxALIGN_RIGHT);
 
 	m_pTables = new wxTreeCtrl(m_pSplitter, IDC_TablesTree, wxDefaultPosition, wxDefaultSize, wxTR_EDIT_LABELS | wxTR_HAS_BUTTONS | wxTR_LINES_AT_ROOT | wxTR_SINGLE);
+	// A single click on an item expands/collapses it, not only the + button.
+	m_pTables->Connect(wxEVT_LEFT_DOWN, wxMouseEventHandler(frmRGDEditor::OnTreeLeftDown), NULL, this);
 	m_pPropManager = new RGDwxPropertyGridManager(m_pSplitter, IDC_PropertyGrid, wxDefaultPosition, wxDefaultSize, wxPG_DEFAULT_STYLE | wxPG_DESCRIPTION);
 	m_pPropertyGrid = m_pPropManager->GetGrid(); 
 
@@ -1574,5 +1576,14 @@ void frmRGDEditor::OnCloseWindow(wxCloseEvent& event)
 			if (event.CanVeto()) event.Veto();
 			break;
 		}
+	}
+}
+
+void frmRGDEditor::OnTreeLeftDown(wxMouseEvent& event)
+{
+	// Clicking the item itself expands/collapses it, like clicking the + button.
+	if(!TreeClickTogglesItem(m_pTables, event))
+	{
+		event.Skip();
 	}
 }

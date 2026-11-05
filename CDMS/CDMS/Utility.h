@@ -57,11 +57,14 @@ void BackupFile(IFileStore* pStore, wxString& sFile);
 void RestoreBackupFile(wxString& sFile);
 void RestoreBackupFile(IFileStore* pStore, wxString& sFile);
 
-/*
-	Checks that a path the user selected can be passed to the ANSI file APIs.
-	Shows an explanation and returns false when it cannot, so the caller can
-	abort instead of operating on a mangled path.
-*/
-bool CheckAnsiPath(const wxString& sPath, wxWindow* pParent = 0);
 
+class wxTreeCtrl;
+
+/*!
+	Expands or collapses a tree item when its label is clicked, so a single
+	click on the item is enough (no need to aim for the small + button).
+	\return true when the click was handled; the caller should then not skip it.
+*/
+
+bool TreeClickTogglesItem(wxTreeCtrl* pTree, wxMouseEvent& event);
 #endif

@@ -1,5 +1,42 @@
 # Changelog
 
+## 0.5.7
+
+International file and folder names, and friendlier trees.
+
+### File and folder names in any language
+
+- **Paths are now carried through the program as UTF-8** and converted to
+  UTF-16 only at the Windows API boundary, instead of being squeezed through
+  the system ANSI code page. A mod installed under `C:\Παιχνίδια\...`, or a
+  file called `Ελληνικά.rgd`, now opens, saves and displays correctly on any
+  Windows installation - not only on one whose locale happens to match the
+  name.
+- Everything that touches the disk goes through the wide API: directory
+  iteration, streams, `.module` parsing, SGA creation, UCS saving, dictionary
+  loading, the module writer's temp-file swap and "New mod" folder creation.
+- Game install paths read from the registry are converted to UTF-8 as well, so
+  a game installed under a non-ASCII path is found.
+- `.module` text (UIName, Description, ...) and RGD string values are still
+  written in the ANSI code page the games expect; values are converted at the
+  file boundary in both directions. Characters the code page cannot represent become `?` in the file
+  (the game could not display them anyway).
+- The "Unsupported characters in path" warning is gone: paths are no longer
+  restricted, so it could never fire.
+
+### Trees
+
+- **Clicking a tree item expands or collapses it** - aiming for the small `+`
+  is no longer necessary. Applies to the file tree, the RGD editor's table tree
+  and the Lua inheritance tree. Clicks on the `+` itself and on leaf items
+  behave exactly as before.
+
+### Fixes found while testing
+
+- The wide-character directory iterator checked the wrong pointer after
+  allocating a path in `VNextItem()`, so it always threw "Failed to allocate
+  memory". It had never been reachable before; the Unicode work now routes
+  directory iteration through it.
 ## 0.5.6
 
 A maintenance release: the 0.5.5 application, built with a current toolchain,

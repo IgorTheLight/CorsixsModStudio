@@ -18,6 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
 #include "CFileSystemStore.h"
+#include "PathUtil.h"
 #ifndef RAINMAN_GNUC
 #include <direct.h>
 #endif
@@ -61,25 +62,19 @@ void CFileSystemStore::VInit(void* pUnused)
 
 IFileStore::IStream* CFileSystemStore::VOpenStream(const char* sFile)
 {
-	FILE* fFile = fopen(sFile, "rb");
-	if(fFile == 0)
+	// Paths are UTF-8; the Windows API wants UTF-16.
+	wchar_t* wsFile = PathUtil_Utf8ToWide(sFile);
+	IFileStore::IStream* pStream = 0;
+	try
 	{
-		throw new CRainmanException(0, __FILE__, __LINE__, "Could not open \'%s\'", sFile);
+		pStream = OpenStreamW(wsFile);
 	}
-
-	CStream *pStream = new CStream();
-	if(pStream == 0)
+	catch(...)
 	{
-		fclose(fFile);
-		throw new CRainmanException(__FILE__, __LINE__, "Failed to allocate memory");
+		delete[] wsFile;
+		throw;
 	}
-
-	pStream->m_fFile = fFile;
-	#ifdef _DEBUG
-	pStream->m_sFile = new char[strlen(sFile) + 1];
-	strcpy(pStream->m_sFile, sFile);
-	#endif
-
+	delete[] wsFile;
 	return pStream;
 }
 
@@ -104,26 +99,6 @@ IFileStore::IStream* CFileSystemStore::OpenStreamW(const wchar_t* sFile)
 }
 
 #ifdef RAINMAN_MSVC
-bool TryMakeDirectory(char* sPath)
-{
-	bool bReturn = false;
-	char* sSep = strrchr(sPath, '\\');
-	if(sSep && strlen(sPath) > 3)
-	{
-		*sSep = 0;
-		DWORD ret = GetFileAttributesA(sPath);
-		bool bIsDir = (ret != (DWORD)-1) && (ret & FILE_ATTRIBUTE_DIRECTORY);
-		if(!bIsDir)
-		{
-			TryMakeDirectory(sPath);
-			if(_mkdir(sPath) == 0)
-				bReturn = true;
-		}
-		*sSep = '\\';
-	}
-	return bReturn;
-}
-
 bool TryMakeDirectoryW(wchar_t* sPath)
 {
 	bool bReturn = false;
@@ -182,36 +157,19 @@ IFileStore::IOutputStream* CFileSystemStore::OpenOutputStreamW(const wchar_t* sF
 
 IFileStore::IOutputStream* CFileSystemStore::VOpenOutputStream(const char* sFile, bool bEraseIfPresent)
 {
-	FILE* fFile = 0;
-	if(!bEraseIfPresent)
-		fFile = fopen(sFile, "r+b");
-	if(fFile == 0)
-		fFile = fopen(sFile, "w+b");
-	if(fFile == 0)
+	// Paths are UTF-8; the Windows API wants UTF-16.
+	wchar_t* wsFile = PathUtil_Utf8ToWide(sFile);
+	IFileStore::IOutputStream* pStream = 0;
+	try
 	{
-		// Maybe folder doesn't exist?
-#ifdef RAINMAN_MSVC
-		char* sFile2 = strdup(sFile);
-		if(TryMakeDirectory(sFile2))
-		{
-			if(!bEraseIfPresent)
-				fFile = fopen(sFile, "r+b");
-			if(fFile == 0)
-				fFile = fopen(sFile, "w+b");
-		}
-		free(sFile2);
-#endif
+		pStream = OpenOutputStreamW(wsFile, bEraseIfPresent);
 	}
-	if(fFile == 0)
-		throw new CRainmanException(0, __FILE__, __LINE__, "Could not open \'%s\' for writing", sFile);
-	COutputStream *pStream = new COutputStream();
-	if(pStream == 0)
+	catch(...)
 	{
-		fclose(fFile);
-		throw new CRainmanException(__FILE__, __LINE__, "Failed to allocate memory");
+		delete[] wsFile;
+		throw;
 	}
-
-	pStream->m_fFile = fFile;
+	delete[] wsFile;
 	return pStream;
 }
 
@@ -369,32 +327,56 @@ static wchar_t* mystrdup(const wchar_t* sStr)
 #ifdef EXTEND_FILESTORE_WITH_TRAVERSE
 tLastWriteTime CFileSystemStore::VGetLastWriteTime(const char* sPath)
 {
+#ifdef RAINMAN_GNUC
 	return GetLastWriteTime(sPath);
+#else
+	wchar_t* wsPath = PathUtil_Utf8ToWide(sPath);
+	WIN32_FILE_ATTRIBUTE_DATA aData;
+	tLastWriteTime oRet = 0;
+	if(GetFileAttributesExW(wsPath, GetFileExInfoStandard, &aData))
+	{
+		oRet = aData.ftLastWriteTime.dwHighDateTime;
+		oRet <<= 32;
+		oRet += aData.ftLastWriteTime.dwLowDateTime;
+		oRet /= 10;
+		oRet -= 0x2B6109100;
+	}
+	delete[] wsPath;
+	return oRet;
+#endif
 }
 
 void CFileSystemStore::VCreateFolderIn(const char* sPath, const char* sNewFolderName)
 {
+#ifdef RAINMAN_GNUC
 	char* sNewPath = new char[strlen(sPath) + strlen(sNewFolderName) + 2];
 	strcpy(sNewPath, sPath);
 	strcat(sNewPath, "\\");
 	strcat(sNewPath, sNewFolderName);
 	bool bRet = (_mkdir(sNewPath) == 0);
-	if(!bRet)
+	if(!bRet && errno != EEXIST)
 	{
-#ifdef WIN32
-		if(errno == EEXIST)
-		{
-			if(PathIsDirectory(sNewPath))
-			{
-				delete[] sNewPath;
-				return;
-			}
-		}
-#endif
 		delete[] sNewPath;
 		throw new CRainmanException(0, __FILE__, __LINE__, "Could not create \'%s\'", sPath);
 	}
 	delete[] sNewPath;
+#else
+	wchar_t* wsPath = PathUtil_Utf8ToWide(sPath);
+	wchar_t* wsName = PathUtil_Utf8ToWide(sNewFolderName);
+	wchar_t* wsNewPath = new wchar_t[wcslen(wsPath) + wcslen(wsName) + 2];
+	wcscpy(wsNewPath, wsPath);
+	wcscat(wsNewPath, L"\\");
+	wcscat(wsNewPath, wsName);
+	bool bRet = CreateDirectoryW(wsNewPath, 0) != FALSE;
+	DWORD dwError = bRet ? 0 : GetLastError();
+	delete[] wsPath;
+	delete[] wsName;
+	delete[] wsNewPath;
+	if(!bRet && dwError != ERROR_ALREADY_EXISTS)
+	{
+		throw new CRainmanException(0, __FILE__, __LINE__, "Could not create \'%s\'", sPath);
+	}
+#endif
 }
 
 CFileSystemStore::CIteratorW::CIteratorW(const wchar_t* sFolder,const CFileSystemStore *pStore)
@@ -609,16 +591,9 @@ IFileStore::IStream* CFileSystemStore::CIterator::VOpenFile()
 
 void CFileSystemStore::CIteratorW::_ensureAsciiVersionOf(const wchar_t* wString, char* &sString)
 {
-	if(sString == 0)
-	{
-		sString = new char[wcslen(wString) + 1];
-		int i = -1;
-		do
-		{
-			++i;
-			sString[i] = (char)wString[i];
-		} while(wString[i]);
-	}
+	// Names handed to the rest of the program are UTF-8, so any language works.
+	delete[] sString;
+	sString = PathUtil_WideToUtf8(wString);
 }
 
 const char* CFileSystemStore::CIteratorW::VGetName()
@@ -746,7 +721,7 @@ IDirectoryTraverser::IIterator::eErrors CFileSystemStore::CIteratorW::VNextItem(
 	{
 		delete[] m_wFullPath;
 		m_wFullPath = new wchar_t[wcslen(m_wParentPath) + wcslen(m_W32FD.cFileName) + 2];
-		if(m_sFullPath == 0)
+		if(m_wFullPath == 0)
 		{
 			FindClose(m_HandFD);
 			m_HandFD = 0;
@@ -778,7 +753,24 @@ IDirectoryTraverser::IIterator::eErrors CFileSystemStore::CIteratorW::VNextItem(
 
 IDirectoryTraverser::IIterator* CFileSystemStore::VIterate(const char* sPath)
 {
+#ifdef RAINMAN_GNUC
 	return new CIterator(sPath, this);
+#else
+	// Iterate with the wide-character iterator so names in any language work.
+	wchar_t* wsPath = PathUtil_Utf8ToWide(sPath);
+	IDirectoryTraverser::IIterator* pIterator = 0;
+	try
+	{
+		pIterator = new CIteratorW(wsPath, this);
+	}
+	catch(...)
+	{
+		delete[] wsPath;
+		throw;
+	}
+	delete[] wsPath;
+	return pIterator;
+#endif
 }
 
 CFileSystemStore::CIteratorW* CFileSystemStore::IterateW(const wchar_t* sPath)

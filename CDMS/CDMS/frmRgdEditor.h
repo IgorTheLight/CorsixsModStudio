@@ -105,6 +105,7 @@ public:
 	void OnPropertyChange(wxPropertyGridEvent& event);
 	void OnTreeSelect(wxTreeEvent& event);
 	void OnTreeExpanding(wxTreeEvent& event);
+	void OnTreeLeftDown(wxMouseEvent& event);
 	void OnTreeRightClick(wxTreeEvent& event);
 	void OnAddChild(wxCommandEvent& event);
 	void OnDelete(wxCommandEvent& event);

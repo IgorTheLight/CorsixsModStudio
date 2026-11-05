@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.24)
 
-project(CorsixsModStudio VERSION 0.5.6 LANGUAGES C CXX RC)
+project(CorsixsModStudio VERSION 0.5.7 LANGUAGES C CXX RC)
 
 if(NOT WIN32)
     message(FATAL_ERROR "Corsix's Mod Studio is a Windows desktop application.")

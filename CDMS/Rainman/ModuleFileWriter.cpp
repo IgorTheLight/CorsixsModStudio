@@ -19,7 +19,7 @@
 #include "ModuleFileWriter.h"
 #include <stdio.h>
 #include <string.h>
-#include <windows.h>
+#include "PathUtil.h"
 
 namespace
 {
@@ -32,7 +32,7 @@ namespace
 
 	bool _ReadWholeFile(const char* sFile, std::string& sContent, std::string& sError)
 	{
-		FILE* fIn = fopen(sFile, "rb");
+		FILE* fIn = PathUtil_fopen(sFile, "rb");
 		if(fIn == 0)
 		{
 			sError = "Unable to open the .module file for reading.";
@@ -76,13 +76,26 @@ bool Rainman_UpdateModuleFile(const char* sFile,
 
 	const std::string sVersion = _FormatVersion(iVersionMajor, iVersionMinor, iVersionRevision);
 
+	// Values live as UTF-8 inside the program but .module files are ANSI, so
+	// convert at the file boundary (unrepresentable characters become '?').
+	std::string aAnsiValues[4];
+	{
+		const char* apSources[4] = { sUIName, sDescription, sTextureFE, sTextureIcon };
+		for(int i = 0; i < 4; ++i)
+		{
+			char* sAnsi = PathUtil_Utf8ToAnsi(apSources[i] ? apSources[i] : "");
+			aAnsiValues[i] = sAnsi;
+			delete[] sAnsi;
+		}
+	}
+
 	_tManagedKey aKeys[] =
 	{
-		{ "UIName",      sUIName ? sUIName : "",           false },
-		{ "Description", sDescription ? sDescription : "", false },
-		{ "TextureFE",   sTextureFE ? sTextureFE : "",     false },
-		{ "TextureIcon", sTextureIcon ? sTextureIcon : "", false },
-		{ "ModVersion",  sVersion.c_str(),                 false },
+		{ "UIName",      aAnsiValues[0].c_str(), false },
+		{ "Description", aAnsiValues[1].c_str(), false },
+		{ "TextureFE",   aAnsiValues[2].c_str(), false },
+		{ "TextureIcon", aAnsiValues[3].c_str(), false },
+		{ "ModVersion",  sVersion.c_str(),       false },
 	};
 	const size_t iKeyCount = sizeof(aKeys) / sizeof(aKeys[0]);
 
@@ -175,7 +188,7 @@ bool Rainman_UpdateModuleFile(const char* sFile,
 	}
 
 	const std::string sTempName = std::string(sFile) + ".modstudio.tmp";
-	FILE* fOut = fopen(sTempName.c_str(), "wb");
+	FILE* fOut = PathUtil_fopen(sTempName.c_str(), "wb");
 	if(fOut == 0)
 	{
 		sError = "Unable to open a temporary file next to the .module for writing.";
@@ -185,17 +198,14 @@ bool Rainman_UpdateModuleFile(const char* sFile,
 	fclose(fOut);
 	if(iWritten != sOutput.size())
 	{
-		remove(sTempName.c_str());
+		PathUtil_remove(sTempName.c_str());
 		sError = "The temporary .module file could not be written completely.";
 		return false;
 	}
-	if(!MoveFileExA(sTempName.c_str(), sFile, MOVEFILE_REPLACE_EXISTING))
+	if(!PathUtil_moveReplace(sTempName.c_str(), sFile))
 	{
-		DWORD iError = GetLastError();
-		remove(sTempName.c_str());
-		char aMessage[128];
-		sprintf(aMessage, "The .module file could not be replaced (error %li).", (long)iError);
-		sError = aMessage;
+		PathUtil_remove(sTempName.c_str());
+		sError = "The .module file could not be replaced.";
 		return false;
 	}
 	return true;

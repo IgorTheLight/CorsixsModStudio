@@ -112,6 +112,8 @@ frmLuaInheritTree::frmLuaInheritTree(wxWindow* parent, wxWindowID id, const wxPo
 
 		m_pInheritTable = new CInheritTable;
 		m_pTree = new wxTreeCtrl(this, IDC_LuaTree, wxDefaultPosition, wxDefaultSize, wxTR_HAS_BUTTONS);
+	// A single click on an item expands/collapses it, not only the + button.
+	m_pTree->Connect(wxEVT_LEFT_DOWN, wxMouseEventHandler(frmLuaInheritTree::OnTreeLeftDown), NULL, this);
 
 		wxImageList* pFileTypes = new wxImageList(16, 16);
 		pFileTypes->Add(wxBitmap(wxT("IDB_FILELUA"), wxBITMAP_TYPE_BMP_RESOURCE)); // ( 0) LUA
@@ -204,4 +206,13 @@ void frmLuaInheritTree::OnTreeExpanding(wxTreeEvent& event)
 void frmLuaInheritTree::OnTreeRightClick(wxTreeEvent& event)
 {  UNUSED(event);
 	// TODO
+}
+
+void frmLuaInheritTree::OnTreeLeftDown(wxMouseEvent& event)
+{
+	// Clicking the item itself expands/collapses it, like clicking the + button.
+	if(!TreeClickTogglesItem(m_pTree, event))
+	{
+		event.Skip();
+	}
 }

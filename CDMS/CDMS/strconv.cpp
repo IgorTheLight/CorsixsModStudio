@@ -20,78 +20,82 @@
 #include <windows.h>
 #include "Common.h"
 
+/*
+	The narrow (char*) strings that cross the Rainman API are UTF-8. Keeping one
+	encoding from end to end means file and folder names work in any language on
+	any Windows installation, instead of depending on the system ANSI code page.
+*/
+
+namespace
+{
+	char* _WideToUtf8(const wchar_t* pUnicode)
+	{
+		if(pUnicode == 0) return 0;
+		int iNeeded = WideCharToMultiByte(CP_UTF8, 0, pUnicode, -1, 0, 0, 0, 0);
+		if(iNeeded <= 0) return 0;
+		char* sUtf8 = new char[iNeeded];
+		if(sUtf8 == 0) return 0;
+		if(WideCharToMultiByte(CP_UTF8, 0, pUnicode, -1, sUtf8, iNeeded, 0, 0) <= 0)
+		{
+			delete[] sUtf8;
+			return 0;
+		}
+		return sUtf8;
+	}
+
+	wchar_t* _Utf8ToWide(const char* sUtf8)
+	{
+		if(sUtf8 == 0) return 0;
+		int iNeeded = MultiByteToWideChar(CP_UTF8, 0, sUtf8, -1, 0, 0);
+		UINT iCodePage = CP_UTF8;
+		if(iNeeded <= 0)
+		{
+			// Not valid UTF-8: treat it as text from an old ANSI file so legacy
+			// data still loads instead of turning into an empty string.
+			iCodePage = CP_ACP;
+			iNeeded = MultiByteToWideChar(CP_ACP, 0, sUtf8, -1, 0, 0);
+			if(iNeeded <= 0) return 0;
+		}
+		wchar_t* wsWide = new wchar_t[iNeeded];
+		if(wsWide == 0) return 0;
+		if(MultiByteToWideChar(iCodePage, 0, sUtf8, -1, wsWide, iNeeded) <= 0)
+		{
+			delete[] wsWide;
+			return 0;
+		}
+		return wsWide;
+	}
+}
+
 wchar_t* AsciiToUnicode(const char* sAscii)
 {
-	size_t iLen = strlen(sAscii) + 1;
-	wchar_t *pUnicode = new wchar_t[iLen];
-	if(!pUnicode) return 0;
-	for(size_t i = 0; i < iLen; ++i)
-	{
-		pUnicode[i] = (wchar_t)sAscii[i];
-	}
-	return pUnicode;
+	return _Utf8ToWide(sAscii);
 }
 
 wchar_t* AsciiToUnicodeDel(char* sAscii)
 {
-	size_t iLen = strlen(sAscii) + 1;
-	wchar_t *pUnicode = new wchar_t[iLen];
-	if(!pUnicode)
-	{
-		delete[] sAscii;
-		return 0;
-	}
-	for(size_t i = 0; i < iLen; ++i)
-	{
-		pUnicode[i] = (wchar_t)sAscii[i];
-	}
+	wchar_t* wsWide = _Utf8ToWide(sAscii);
 	delete[] sAscii;
-	return pUnicode;
+	return wsWide;
 }
 
 wchar_t* AsciiToUnicodeFree(char* sAscii)
 {
-	size_t iLen = strlen(sAscii) + 1;
-	wchar_t *pUnicode = new wchar_t[iLen];
-	if(!pUnicode)
-	{
-		free(sAscii);
-		return 0;
-	}
-	for(size_t i = 0; i < iLen; ++i)
-	{
-		pUnicode[i] = (wchar_t)sAscii[i];
-	}
+	wchar_t* wsWide = _Utf8ToWide(sAscii);
 	free(sAscii);
-	return pUnicode;
+	return wsWide;
 }
 
 char* UnicodeToAscii(const wchar_t* pUnicode)
 {
-	if(!pUnicode) return 0;
-	// Rainman and the file APIs it uses take ANSI strings, so convert through
-	// the system ANSI code page. A plain truncation to one byte per character
-	// used to turn everything above Latin-1 into '?', which made the program
-	// unusable on localized Windows installations (Cyrillic, Greek, CJK, ...).
-	int iNeeded = WideCharToMultiByte(CP_ACP, 0, pUnicode, -1, 0, 0, 0, 0);
-	if(iNeeded <= 0) return 0;
-	char* sAscii = new char[iNeeded];
-	if(!sAscii) return 0;
-	if(WideCharToMultiByte(CP_ACP, 0, pUnicode, -1, sAscii, iNeeded, 0, 0) <= 0)
-	{
-		delete[] sAscii;
-		return 0;
-	}
-	return sAscii;
+	return _WideToUtf8(pUnicode);
 }
 
 bool IsAnsiRepresentable(const wchar_t* pUnicode)
 {
-	if(!pUnicode) return false;
-	// With the Windows "Use Unicode UTF-8 for worldwide language support"
-	// option the ANSI code page is UTF-8, which can represent every string (and
-	// rejects the WC_NO_BEST_FIT_CHARS flag). Treating it as unrepresentable
-	// would refuse every path on such installations.
+	if(pUnicode == 0) return false;
+	// Text that ends up inside game files still has to fit the ANSI code page,
+	// so the module editor can still warn about it. Paths no longer care.
 	if(GetACP() == CP_UTF8) return true;
 	int iNeeded = WideCharToMultiByte(CP_ACP, WC_NO_BEST_FIT_CHARS, pUnicode, -1, 0, 0, 0, 0);
 	if(iNeeded <= 0) return false;
@@ -106,17 +110,41 @@ bool IsAnsiRepresentable(const wchar_t* pUnicode)
 wxString AsciiTowxString(const char* sAscii)
 {
 	if(sAscii == 0) return wxString();
-	/*
-	wchar_t* pUnicode = AsciiToUnicode(sAscii);
-	if(!pUnicode) return wxString();
-	wxString r(pUnicode);
-	delete[] pUnicode;
-	return r;
-	*/
-	return wxString(sAscii, wxConvUTF8);
+	wxString sResult = wxString::FromUTF8(sAscii);
+	if(sResult.IsEmpty() && sAscii[0] != 0)
+	{
+		// Legacy ANSI text (a .lua or .scar file written years ago, say) is not
+		// UTF-8. Fall back to the system code page so it still displays.
+		int iNeeded = MultiByteToWideChar(CP_ACP, 0, sAscii, -1, 0, 0);
+		if(iNeeded <= 0) return wxString();
+		wchar_t* wsWide = new wchar_t[iNeeded];
+		MultiByteToWideChar(CP_ACP, 0, sAscii, -1, wsWide, iNeeded);
+		sResult = wxString(wsWide);
+		delete[] wsWide;
+	}
+	return sResult;
 }
 
 char* wxStringToAscii(const wxString& oStr)
 {
-	return UnicodeToAscii(oStr.c_str());
+	return _WideToUtf8(oStr.c_str());
+}
+
+FILE* FopenUtf8(const char* sUtf8Path, const char* sMode)
+{
+	if(sUtf8Path == 0) return 0;
+	wchar_t wsMode[8];
+	size_t i = 0;
+	for(; sMode[i] && i + 1 < 8; ++i)
+	{
+		wsMode[i] = (wchar_t)(unsigned char)sMode[i];
+	}
+	wsMode[i] = 0;
+	int iNeeded = MultiByteToWideChar(CP_UTF8, 0, sUtf8Path, -1, 0, 0);
+	if(iNeeded <= 0) return 0;
+	wchar_t* wsPath = new wchar_t[iNeeded];
+	MultiByteToWideChar(CP_UTF8, 0, sUtf8Path, -1, wsPath, iNeeded);
+	FILE* f = _wfopen(wsPath, wsMode);
+	delete[] wsPath;
+	return f;
 }

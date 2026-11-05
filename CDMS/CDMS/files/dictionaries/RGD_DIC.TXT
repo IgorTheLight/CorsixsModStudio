@@ -64,6 +64,7 @@
 0x019592AD=parent_hardpoint
 0x01A16CF4=ui_direction_required
 0x01A2C657=mine_ext
+0x1EB607B6=max_count
 0x01A3AA4F=deathtimer
 0x01AA9A71=entry09
 0x01B588E3=target_filter_table

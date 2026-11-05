@@ -2,7 +2,7 @@
 
 Corsix's Mod Studio 0.5.5 was written for Visual Studio 2003/2005. This tree
 keeps those sources, but builds them with a current MSVC (32-bit) through CMake,
-and reports itself as version 0.5.6 (`CHANGELOG.md` lists what changed). The
+and reports itself as version 0.5.7 (`CHANGELOG.md` lists what changed). The
 goal is that the program behaves like 0.5.5, so changes to the original sources
 are kept to the smallest set that a modern compiler and SDK require, plus a
 handful of features that 0.5.5 shipped but never wired up.
@@ -100,22 +100,40 @@ that was never called, or adds a guard around an existing one.
 | `CDMS/Construct.cpp`, `Construct.h`, `strings.h` | `FindRelicTool()` / `UpdateRelicToolsMenu()`: search the mod folder, `ModTools` and the configured game folders; disable missing entries; explain a missing tool on launch | Every Relic tool menu item was enabled even when the executable did not exist, so clicking it did nothing. |
 | `CDMS/Construct.cpp`, `Construct.h` | Accelerator table: `Ctrl+S` save active editor, `Ctrl+W` close active tab, `Ctrl+Tab` next tab; `OnSaveActive` dispatches by editor type | The editors had no keyboard shortcuts; dispatching by type (not by synthesised button id) avoids id collisions between pages. |
 
+## Unicode file paths and tree clicks (0.5.7)
+
+| File | Change | Why |
+| --- | --- | --- |
+| `CDMS/Rainman/PathUtil.h`, `PathUtil.cpp` | New: UTF-8 <-> UTF-16 conversion, `PathUtil_fopen`, `PathUtil_mkdir`, `PathUtil_remove`, `PathUtil_moveReplace`, and ANSI <-> UTF-8 helpers for game text | Windows file APIs need UTF-16; the program now keeps paths in UTF-8. Centralising the conversions keeps every call site correct and auditable. |
+| `CDMS/Rainman/CFileSystemStore.cpp` | `VOpenStream`, `VOpenOutputStream`, `VIterate`, `VGetLastWriteTime` and `VCreateFolderIn` convert to UTF-16 and use the existing wide implementations; `CIteratorW` name conversion is UTF-8; removed the unused ANSI `TryMakeDirectory` | The wide stream/iterator code already existed but was unreachable, so non-ANSI names could not be opened or listed. |
+| `CDMS/Rainman/WriteTime.cpp` | `_wopen` instead of `_open` | Same reason, for the timestamp helper. |
+| `CDMS/Rainman/CModuleFile.cpp`, `CDoWModule.cpp`, `CUcsFile.cpp`, `CSgaCreator.cpp`, `CRgdHashTable.cpp`, `luax.cpp` | `fopen` -> `PathUtil_fopen` | Opening mods, SGAs, UCS files and dictionaries in folders whose names are not in the ANSI code page. |
+| `CDMS/Rainman/CModuleFile.cpp` | Parsed `.module` values are converted ANSI -> UTF-8 (allocated with `malloc` so the existing `free()` calls stay valid), including `.sga` names built from `ArchiveFile.N` | The UI now expects UTF-8; without this conversion localised mod names would display as mojibake or vanish. |
+| `CDMS/Rainman/CRgdFile.cpp` | `DT_String` values are converted ANSI -> UTF-8 on read and UTF-8 -> ANSI on save; the local widening/narrowing helpers now use the UTF-8 conversions | Attribute text lives in game files as ANSI while the program edits UTF-8 strings. |
+| `CDMS/Rainman/ModuleFileWriter.cpp` | Managed values are converted UTF-8 -> ANSI on write; temp file and replacement use the wide helpers | Keeps `.module` files in the encoding the games read. |
+| `CDMS/Rainman/Util.cpp` | Registry install paths are converted ANSI -> UTF-8 before returning | A game installed under a non-ASCII path is now found. |
+| `CDMS/CDMS/strconv.cpp`, `strconv.h` | `UnicodeToAscii`/`AsciiToUnicode` use UTF-8; `AsciiTowxString` falls back to the ANSI code page for legacy text; added `FopenUtf8` | One encoding end to end. The fallback keeps old ANSI `.lua`/`.scar` files readable. |
+| `CDMS/CDMS/frmNewMod.cpp` | `_mkdir`/`fopen` on UTF-8 paths replaced by wide equivalents; module display text converted to ANSI before writing | Creating a mod in a folder with a non-ASCII name. |
+| `CDMS/CDMS/frmFiles_Actions.h`, `Tool_AESetup.cpp`, `Tool_AutoDPS.cpp` | Remaining raw `fopen` calls use `FopenUtf8` | Same reason. |
+| `CDMS/CDMS/Utility.cpp`, `Utility.h` | New `TreeClickTogglesItem`; removed `CheckAnsiPath` | Paths are no longer restricted, so the warning cannot trigger; trees get single-click expansion. |
+| `CDMS/CDMS/frmFiles.cpp`, `frmFiles.h`, `frmRgdEditor.cpp`, `frmRgdEditor.h`, `frmLuaInheritTree.cpp`, `frmLuaInheritTree.h` | `wxEVT_LEFT_DOWN` handler toggles an item that has children when its label is clicked | Quality of life: no need to hit the `+` button. |
+| `CDMS/CDMS/Strings.h`, `art/*.rc`, `art/*.manifest`, `CMakeLists.txt` | Version 0.5.7 | Release identity. |
 ## Version identity
 
-The build identifies itself as 0.5.6 rather than 0.5.5. That changes the version
+The build identifies itself as 0.5.7 rather than 0.5.5. That changes the version
 data only — no behaviour:
 
 | File | Change |
 | --- | --- |
-| `CMakeLists.txt` | `project(... VERSION 0.5.6)` drives the package name |
-| `CDMS/CDMS/strings.h` | `app_version` is `"0.5.6"`, so the title bar, About box and version fields read 0.5.6 |
-| `CDMS/CDMS/art/stuff.rc` | `FILEVERSION`/`PRODUCTVERSION` and the `FileVersion`/`ProductVersion` strings are `0, 5, 6, 0` |
-| `CDMS/CDMS/art/CorsixsModStudio.manifest` | Assembly version is `0.5.6.0` |
-| `CDMS/Rainman/version.rc` | `SpecialBuild` reads "For Mod Studio 0.5.6"; Rainman keeps its own library version, 1.5.5.0 |
+| `CMakeLists.txt` | `project(... VERSION 0.5.7)` drives the package name |
+| `CDMS/CDMS/strings.h` | `app_version` is `"0.5.7"`, so the title bar, About box and version fields read 0.5.7 |
+| `CDMS/CDMS/art/stuff.rc` | `FILEVERSION`/`PRODUCTVERSION` and the `FileVersion`/`ProductVersion` strings are `0, 5, 7, 0` |
+| `CDMS/CDMS/art/CorsixsModStudio.manifest` | Assembly version is `0.5.7.0` |
+| `CDMS/Rainman/version.rc` | `SpecialBuild` reads "For Mod Studio 0.5.7"; Rainman keeps its own library version, 1.5.5.0 |
 
 The 0.5.5 help pages under `CDMS/CDMS/files/docs` are the released 2008
 documentation and keep their historical text. `CHANGELOG.md` describes what
-0.5.6 changes.
+0.5.7 changes.
 
 ## Checking fidelity
 

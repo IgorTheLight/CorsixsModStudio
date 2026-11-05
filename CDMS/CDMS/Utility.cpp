@@ -17,6 +17,7 @@
 */
 
 #include "Utility.h"
+#include <wx/treectrl.h>
 //#include "strings.h"
 #include "Common.h"
 
@@ -222,13 +223,35 @@ void RestoreBackupFile(IFileStore* pStore, wxString& sFile)
 	*/
 }
 
-bool CheckAnsiPath(const wxString& sPath, wxWindow* pParent)
+bool TreeClickTogglesItem(wxTreeCtrl* pTree, wxMouseEvent& event)
 {
-	if(IsAnsiRepresentable(sPath.c_str()))
+	if(pTree == 0)
 	{
-		return true;
+		return false;
 	}
-	::wxMessageBox(wxString::Format(AppStr(path_notansi), sPath), AppStr(path_notansi_title),
-		wxOK | wxICON_ERROR, pParent);
-	return false;
+	int iFlags = 0;
+	wxTreeItemId oItem = pTree->HitTest(event.GetPosition(), iFlags);
+	if(!oItem.IsOk())
+	{
+		return false;
+	}
+	// Clicks on the + button and elsewhere keep their default behaviour.
+	if((iFlags & wxTREE_HITTEST_ONITEMBUTTON) || !(iFlags & wxTREE_HITTEST_ONITEMLABEL))
+	{
+		return false;
+	}
+	if(!pTree->ItemHasChildren(oItem))
+	{
+		return false;
+	}
+	pTree->SelectItem(oItem);
+	if(pTree->IsExpanded(oItem))
+	{
+		pTree->Collapse(oItem);
+	}
+	else
+	{
+		pTree->Expand(oItem);
+	}
+	return true;
 }

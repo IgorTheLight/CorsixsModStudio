@@ -26,6 +26,45 @@
 #include <errno.h>
 #include <wx/textdlg.h>
 #include "Common.h"
+#include <windows.h>
+#include <direct.h>
+#include <malloc.h>
+
+namespace
+{
+	// Paths in this program are UTF-8; the Windows CRT wants UTF-16.
+	int _mkdirUtf8(const char* sUtf8Path)
+	{
+		int iNeeded = MultiByteToWideChar(CP_UTF8, 0, sUtf8Path, -1, 0, 0);
+		if(iNeeded <= 0) return -1;
+		wchar_t* wsPath = new wchar_t[iNeeded];
+		MultiByteToWideChar(CP_UTF8, 0, sUtf8Path, -1, wsPath, iNeeded);
+		int iRet = _wmkdir(wsPath);
+		delete[] wsPath;
+		return iRet;
+	}
+
+	// .module files store their text in the ANSI code page.
+	char* _Utf8ToAnsiCopy(const char* sUtf8)
+	{
+		int iWide = MultiByteToWideChar(CP_UTF8, 0, sUtf8, -1, 0, 0);
+		if(iWide <= 0)
+		{
+			char* sCopy = (char*)malloc(strlen(sUtf8) + 1);
+			strcpy(sCopy, sUtf8);
+			return sCopy;
+		}
+		wchar_t* wsWide = new wchar_t[iWide];
+		MultiByteToWideChar(CP_UTF8, 0, sUtf8, -1, wsWide, iWide);
+		int iAnsi = WideCharToMultiByte(CP_ACP, WC_NO_BEST_FIT_CHARS, wsWide, -1, 0, 0, 0, 0);
+		if(iAnsi <= 0) iAnsi = iWide * 2 + 1;
+		char* sAnsi = (char*)malloc(iAnsi);
+		WideCharToMultiByte(CP_ACP, WC_NO_BEST_FIT_CHARS, wsWide, -1, sAnsi, iAnsi, 0, 0);
+		delete[] wsWide;
+		return sAnsi;
+	}
+}
+
 
 BEGIN_EVENT_TABLE(frmNewMod, wxDialog)
 	EVT_BUTTON(IDC_New, frmNewMod::OnNewClick)
@@ -168,8 +207,6 @@ void frmNewMod::OnGameChange(wxCommandEvent& event)
 void frmNewMod::OnBrowseClick(wxCommandEvent& event)
 {
 	wxString sVal = wxDirSelector(AppStr(sgapack_dirselect), m_pCreation->GetLabel(), 0, wxDefaultPosition, TheConstruct);
-	if(!CheckAnsiPath(sVal, this))
-		return;
 
 	m_pCreation->SetLabel(sVal);
 
@@ -233,25 +270,29 @@ void frmNewMod::_MakeCOH(char* sNiceName, char* sDirectoryFullPath, char* sDirec
 
 	// Setup directories
 	char* saDirExt = new char[strlen(sDirectoryFullPath) + 64];
-	strcpy(saDirExt, sDirectoryFullPath); strcat(saDirExt, "\\Data"); _mkdir(saDirExt);
-	strcpy(saDirExt, sDirectoryFullPath); strcat(saDirExt, "\\Locale"); _mkdir(saDirExt);
-	strcpy(saDirExt, sDirectoryFullPath); strcat(saDirExt, "\\Movies"); _mkdir(saDirExt);
-	strcpy(saDirExt, sDirectoryFullPath); strcat(saDirExt, "\\DataAttrib"); _mkdir(saDirExt);
-	strcpy(saDirExt, sDirectoryFullPath); strcat(saDirExt, "\\DataSoundLow"); _mkdir(saDirExt);
-	strcpy(saDirExt, sDirectoryFullPath); strcat(saDirExt, "\\DataSoundEnglish"); _mkdir(saDirExt);
-	strcpy(saDirExt, sDirectoryFullPath); strcat(saDirExt, "\\DataSoundGerman"); _mkdir(saDirExt);
-	strcpy(saDirExt, sDirectoryFullPath); strcat(saDirExt, "\\DataSoundFrench"); _mkdir(saDirExt);
-	strcpy(saDirExt, sDirectoryFullPath); strcat(saDirExt, "\\DataSoundSpanish"); _mkdir(saDirExt);
-	strcpy(saDirExt, sDirectoryFullPath); strcat(saDirExt, "\\DataSoundRussian"); _mkdir(saDirExt);
-	strcpy(saDirExt, sDirectoryFullPath); strcat(saDirExt, "\\DataSoundHigh"); _mkdir(saDirExt);
-	strcpy(saDirExt, sDirectoryFullPath); strcat(saDirExt, "\\DataArtLow"); _mkdir(saDirExt);
-	strcpy(saDirExt, sDirectoryFullPath); strcat(saDirExt, "\\DataArtHigh"); _mkdir(saDirExt);
+	strcpy(saDirExt, sDirectoryFullPath); strcat(saDirExt, "\\Data"); _mkdirUtf8(saDirExt);
+	strcpy(saDirExt, sDirectoryFullPath); strcat(saDirExt, "\\Locale"); _mkdirUtf8(saDirExt);
+	strcpy(saDirExt, sDirectoryFullPath); strcat(saDirExt, "\\Movies"); _mkdirUtf8(saDirExt);
+	strcpy(saDirExt, sDirectoryFullPath); strcat(saDirExt, "\\DataAttrib"); _mkdirUtf8(saDirExt);
+	strcpy(saDirExt, sDirectoryFullPath); strcat(saDirExt, "\\DataSoundLow"); _mkdirUtf8(saDirExt);
+	strcpy(saDirExt, sDirectoryFullPath); strcat(saDirExt, "\\DataSoundEnglish"); _mkdirUtf8(saDirExt);
+	strcpy(saDirExt, sDirectoryFullPath); strcat(saDirExt, "\\DataSoundGerman"); _mkdirUtf8(saDirExt);
+	strcpy(saDirExt, sDirectoryFullPath); strcat(saDirExt, "\\DataSoundFrench"); _mkdirUtf8(saDirExt);
+	strcpy(saDirExt, sDirectoryFullPath); strcat(saDirExt, "\\DataSoundSpanish"); _mkdirUtf8(saDirExt);
+	strcpy(saDirExt, sDirectoryFullPath); strcat(saDirExt, "\\DataSoundRussian"); _mkdirUtf8(saDirExt);
+	strcpy(saDirExt, sDirectoryFullPath); strcat(saDirExt, "\\DataSoundHigh"); _mkdirUtf8(saDirExt);
+	strcpy(saDirExt, sDirectoryFullPath); strcat(saDirExt, "\\DataArtLow"); _mkdirUtf8(saDirExt);
+	strcpy(saDirExt, sDirectoryFullPath); strcat(saDirExt, "\\DataArtHigh"); _mkdirUtf8(saDirExt);
 
 	// Write module file
 	fprintf(fModule, "[global]\xD\n");
-	fprintf(fModule, "Name = %s\xD\n", sNiceName);
-	fprintf(fModule, "UIName = %s\xD\n", sName);
-	fprintf(fModule, "Description = The %s mod\xD\n", sName);
+	char* sNiceNameAnsi = _Utf8ToAnsiCopy(sNiceName);
+	char* sNameAnsi = _Utf8ToAnsiCopy(sName);
+	fprintf(fModule, "Name = %s\xD\n", sNiceNameAnsi);
+	fprintf(fModule, "UIName = %s\xD\n", sNameAnsi);
+	fprintf(fModule, "Description = The %s mod\xD\n", sNameAnsi);
+	free(sNiceNameAnsi);
+	free(sNameAnsi);
 	fprintf(fModule, "DllName = WW2Mod\xD\n");
 	fprintf(fModule, "ModVersion = 1.0\xD\n");
 	fprintf(fModule, "ModFolder = %s\\Data\xD\n", sDirectoryName);
@@ -371,7 +412,7 @@ void frmNewMod::OnNewClick(wxCommandEvent& event)
 			strcat(saDir, buffer);
 		}
 		++iVal;
-	}while(((iRes = _mkdir(saDir)) == -1) && (errno == EEXIST));
+	}while(((iRes = _mkdirUtf8(saDir)) == -1) && (errno == EEXIST));
 	if(iRes == -1 && errno != EEXIST)
 	{
 		delete[] saDir;
@@ -384,33 +425,33 @@ void frmNewMod::OnNewClick(wxCommandEvent& event)
 	if(m_pList->GetSelection() == g_kDawnOfWar || m_pList->GetSelection() == g_kWinterAssault || m_pList->GetSelection() == g_kDarkCrusade || m_pList->GetSelection() == g_kSoulstorm)
 	{
 		char* saDirExt = new char[strlen(saDir) + 30];
-		strcpy(saDirExt, saDir); strcat(saDirExt, "\\Data"); _mkdir(saDirExt);
-		strcpy(saDirExt, saDir); strcat(saDirExt, "\\Data_Shared_Textures"); _mkdir(saDirExt);
-		strcpy(saDirExt, saDir); strcat(saDirExt, "\\Data_Shared_Textures\\Full"); _mkdir(saDirExt);
-		strcpy(saDirExt, saDir); strcat(saDirExt, "\\Data_Sound"); _mkdir(saDirExt);
-		strcpy(saDirExt, saDir); strcat(saDirExt, "\\Data_Sound\\Low"); _mkdir(saDirExt);
-		strcpy(saDirExt, saDir); strcat(saDirExt, "\\Data_Sound\\Med"); _mkdir(saDirExt);
-		strcpy(saDirExt, saDir); strcat(saDirExt, "\\Data_Sound\\Full"); _mkdir(saDirExt);
-		strcpy(saDirExt, saDir); strcat(saDirExt, "\\Data_Music"); _mkdir(saDirExt);
-		strcpy(saDirExt, saDir); strcat(saDirExt, "\\Data_Whm"); _mkdir(saDirExt);
-		strcpy(saDirExt, saDir); strcat(saDirExt, "\\Data_Whm\\High"); _mkdir(saDirExt);
-		strcpy(saDirExt, saDir); strcat(saDirExt, "\\Data_Whm\\Low"); _mkdir(saDirExt);
-		strcpy(saDirExt, saDir); strcat(saDirExt, "\\Data_Whm\\Medium"); _mkdir(saDirExt);
-		strcpy(saDirExt, saDir); strcat(saDirExt, "\\Locale"); _mkdir(saDirExt);
-		strcpy(saDirExt, saDir); strcat(saDirExt, "\\Locale\\Chinese"); _mkdir(saDirExt);
-		strcpy(saDirExt, saDir); strcat(saDirExt, "\\Locale\\Czech"); _mkdir(saDirExt);
-		strcpy(saDirExt, saDir); strcat(saDirExt, "\\Locale\\English"); _mkdir(saDirExt);
-		strcpy(saDirExt, saDir); strcat(saDirExt, "\\Locale\\English_Chinese"); _mkdir(saDirExt);
-		strcpy(saDirExt, saDir); strcat(saDirExt, "\\Locale\\French"); _mkdir(saDirExt);
-		strcpy(saDirExt, saDir); strcat(saDirExt, "\\Locale\\German"); _mkdir(saDirExt);
-		strcpy(saDirExt, saDir); strcat(saDirExt, "\\Locale\\Italian"); _mkdir(saDirExt);
-		strcpy(saDirExt, saDir); strcat(saDirExt, "\\Locale\\Japanese"); _mkdir(saDirExt);
-		strcpy(saDirExt, saDir); strcat(saDirExt, "\\Locale\\Korean"); _mkdir(saDirExt);
-		strcpy(saDirExt, saDir); strcat(saDirExt, "\\Locale\\Korean adult"); _mkdir(saDirExt);
-		strcpy(saDirExt, saDir); strcat(saDirExt, "\\Locale\\Polish"); _mkdir(saDirExt);
-		strcpy(saDirExt, saDir); strcat(saDirExt, "\\Locale\\Russian"); _mkdir(saDirExt);
-		strcpy(saDirExt, saDir); strcat(saDirExt, "\\Locale\\Slovak"); _mkdir(saDirExt);
-		strcpy(saDirExt, saDir); strcat(saDirExt, "\\Locale\\Spanish"); _mkdir(saDirExt);
+		strcpy(saDirExt, saDir); strcat(saDirExt, "\\Data"); _mkdirUtf8(saDirExt);
+		strcpy(saDirExt, saDir); strcat(saDirExt, "\\Data_Shared_Textures"); _mkdirUtf8(saDirExt);
+		strcpy(saDirExt, saDir); strcat(saDirExt, "\\Data_Shared_Textures\\Full"); _mkdirUtf8(saDirExt);
+		strcpy(saDirExt, saDir); strcat(saDirExt, "\\Data_Sound"); _mkdirUtf8(saDirExt);
+		strcpy(saDirExt, saDir); strcat(saDirExt, "\\Data_Sound\\Low"); _mkdirUtf8(saDirExt);
+		strcpy(saDirExt, saDir); strcat(saDirExt, "\\Data_Sound\\Med"); _mkdirUtf8(saDirExt);
+		strcpy(saDirExt, saDir); strcat(saDirExt, "\\Data_Sound\\Full"); _mkdirUtf8(saDirExt);
+		strcpy(saDirExt, saDir); strcat(saDirExt, "\\Data_Music"); _mkdirUtf8(saDirExt);
+		strcpy(saDirExt, saDir); strcat(saDirExt, "\\Data_Whm"); _mkdirUtf8(saDirExt);
+		strcpy(saDirExt, saDir); strcat(saDirExt, "\\Data_Whm\\High"); _mkdirUtf8(saDirExt);
+		strcpy(saDirExt, saDir); strcat(saDirExt, "\\Data_Whm\\Low"); _mkdirUtf8(saDirExt);
+		strcpy(saDirExt, saDir); strcat(saDirExt, "\\Data_Whm\\Medium"); _mkdirUtf8(saDirExt);
+		strcpy(saDirExt, saDir); strcat(saDirExt, "\\Locale"); _mkdirUtf8(saDirExt);
+		strcpy(saDirExt, saDir); strcat(saDirExt, "\\Locale\\Chinese"); _mkdirUtf8(saDirExt);
+		strcpy(saDirExt, saDir); strcat(saDirExt, "\\Locale\\Czech"); _mkdirUtf8(saDirExt);
+		strcpy(saDirExt, saDir); strcat(saDirExt, "\\Locale\\English"); _mkdirUtf8(saDirExt);
+		strcpy(saDirExt, saDir); strcat(saDirExt, "\\Locale\\English_Chinese"); _mkdirUtf8(saDirExt);
+		strcpy(saDirExt, saDir); strcat(saDirExt, "\\Locale\\French"); _mkdirUtf8(saDirExt);
+		strcpy(saDirExt, saDir); strcat(saDirExt, "\\Locale\\German"); _mkdirUtf8(saDirExt);
+		strcpy(saDirExt, saDir); strcat(saDirExt, "\\Locale\\Italian"); _mkdirUtf8(saDirExt);
+		strcpy(saDirExt, saDir); strcat(saDirExt, "\\Locale\\Japanese"); _mkdirUtf8(saDirExt);
+		strcpy(saDirExt, saDir); strcat(saDirExt, "\\Locale\\Korean"); _mkdirUtf8(saDirExt);
+		strcpy(saDirExt, saDir); strcat(saDirExt, "\\Locale\\Korean adult"); _mkdirUtf8(saDirExt);
+		strcpy(saDirExt, saDir); strcat(saDirExt, "\\Locale\\Polish"); _mkdirUtf8(saDirExt);
+		strcpy(saDirExt, saDir); strcat(saDirExt, "\\Locale\\Russian"); _mkdirUtf8(saDirExt);
+		strcpy(saDirExt, saDir); strcat(saDirExt, "\\Locale\\Slovak"); _mkdirUtf8(saDirExt);
+		strcpy(saDirExt, saDir); strcat(saDirExt, "\\Locale\\Spanish"); _mkdirUtf8(saDirExt);
 		delete[] saDirExt;
 	}
 	char* sTmp222 = saDir + strlen(saDoW);
@@ -434,9 +475,9 @@ void frmNewMod::OnNewClick(wxCommandEvent& event)
 		}
 		strcat(saDir, ".module");
 		++iVal;
-	}while(f = fopen(saDir, "r"));
+	}while(f = FopenUtf8(saDir, "r"));
 	delete[] saDoW;
-	f = fopen(saDir, "wb");
+	f = FopenUtf8(saDir, "wb");
 	m_sDoWPath = AsciiTowxString(saDir);
 
 	if(m_pList->GetSelection() == g_kCompanyOfHeroes)

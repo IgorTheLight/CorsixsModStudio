@@ -1,6 +1,6 @@
-# Corsix's Mod Studio 0.5.6
+# Corsix's Mod Studio 0.5.7
 
-This repository contains the Windows desktop source for Corsix's Mod Studio and its Rainman library. The original Visual Studio 2005 solution remains for historical reference. The maintained build path uses CMake and the Win32 (x86) MSVC toolchain. C++ modernization is intentionally out of scope for this port: the goal is a buildable, runnable 0.5.6 — the 0.5.5 feature set plus build fixes and the shipped-but-unconnected UI fixes — not a redesign. `PORTING.md` lists every source edit against the original 0.5.5 release and why it exists, and `CHANGELOG.md` summarises what 0.5.6 changes.
+This repository contains the Windows desktop source for Corsix's Mod Studio and its Rainman library. The original Visual Studio 2005 solution remains for historical reference. The maintained build path uses CMake and the Win32 (x86) MSVC toolchain. C++ modernization is intentionally out of scope for this port: the goal is a buildable, runnable 0.5.7 — the 0.5.5 feature set plus build fixes and the shipped-but-unconnected UI fixes — not a redesign. `PORTING.md` lists every source edit against the original 0.5.5 release and why it exists, and `CHANGELOG.md` summarises what 0.5.7 changes.
 
 ## Repository layout
 
@@ -21,7 +21,7 @@ The untouched 0.5.5 sources used as the fidelity reference live next to this rep
 
 - Visual Studio 2026 with **Desktop development with C++**, an x86 MSVC toolset, and a Windows SDK.
 - CMake 3.24 or newer.
-- wxWidgets 2.8.12, built as static Unicode Win32 libraries. `bootstrap-wxwidgets.ps1` downloads the official release archive into `out/deps/wxWidgets-2.8.12` when the tree is missing; pass `-Source <zip>` to use a local copy instead. Only the Release libraries are required, and only the Debug ones if you want to debug into wxWidgets.
+- wxWidgets 2.8.12, built as static Unicode Win32 libraries. `bootstrap-wxwidgets.ps1` downloads the official release archive into `out/deps/wxWidgets-2.8.12` when the tree is missing; pass `-Source <zip>` to use a local copy instead. Only the Release libraries are required to build the application; the Debug ones additionally enable wxWidgets' assertion checks and line-level debugging. The helper builds both flavours by default, and CMake drops the Debug configuration from the solution while the Debug libraries are missing.
 - wxPropertyGrid 1.2.6, the stand-alone library the property grid needs. It is bundled in `third_party/wxpropgrid` because wxWidgets 2.8.x never included it and its old download page is gone. `bootstrap-wxwidgets.ps1` installs it into the wxWidgets tree.
 - wxWidgets' STC contrib library, built from the same wxWidgets tree.
 
@@ -59,7 +59,7 @@ Override `WXWIDGETS_ROOT` if the wxWidgets tree lives elsewhere. The CMake prese
 .\package-win32.ps1
 ```
 
-Builds (unless `-SkipBuild`) and stages the executable, `Rainman.dll`, the runtime libraries and `Mod_Studio_Files` into `out/dist/CorsixsModStudio-0.5.6-win32`, then zips it. `-Configuration Debug` and `-NoArchive` are available; the folder is self-contained and can be copied to another machine.
+Builds (unless `-SkipBuild`) and stages the executable, `Rainman.dll`, the runtime libraries and `Mod_Studio_Files` into `out/dist/CorsixsModStudio-0.5.7-win32`, then zips it. `-Configuration Debug` and `-NoArchive` are available; the folder is self-contained and can be copied to another machine.
 
 ## Licensing
 

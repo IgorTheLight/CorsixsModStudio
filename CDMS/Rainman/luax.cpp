@@ -18,6 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
 #include "luax.h"
+#include "PathUtil.h"
 extern "C" {
 #include <lauxlib.h>
 #include <lualib.h>
@@ -62,7 +63,7 @@ void luax_PrintGlobals(lua_State* L, const char* sFile, unsigned long iLevel, bo
 	{
 		lua_pushstring(L, "_G");
 		lua_gettable(L, LUA_GLOBALSINDEX);
-		f = fopen(sFile, "wb");
+		f = PathUtil_fopen(sFile, "wb");
 	}
 	else
 	{

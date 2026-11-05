@@ -59,4 +59,7 @@ wxString AsciiTowxString(const char* sAscii);
 */
 char* wxStringToAscii(const wxString& oStr);
 
+/*! Opens a file whose path is UTF-8 (the encoding used throughout the program). */
+FILE* FopenUtf8(const char* sUtf8Path, const char* sMode);
+
 #endif

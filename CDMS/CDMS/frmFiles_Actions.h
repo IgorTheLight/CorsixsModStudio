@@ -2390,7 +2390,7 @@ public:
 			size_t iL = 0;
 			unsigned char iByte;
 			char* sFile = UnicodeToAscii(pFileDialog->GetPath());
-			FILE* fIn = fopen(sFile, "rb");
+			FILE* fIn = FopenUtf8(sFile, "rb");
 			fseek(fIn, 0, SEEK_END);
 			iCount = ftell(fIn);
 			fseek(fIn, 0, SEEK_SET);

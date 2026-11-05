@@ -19,6 +19,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include "Util.h"
 #include "Internal_Util.h"
+#include "PathUtil.h"
 #include "CFileSystemStore.h"
 #ifndef RAINMAN_GNUC
 #include <windows.h>
@@ -52,7 +53,13 @@ RAINMAN_API char* Rainman_GetDoWPath()
 		t = dataLen;
 		iReturnVal = RegQueryValueEx(hkey,"InstallLocation",NULL,NULL,(LPBYTE)sDoWPath,&t);
 		RegCloseKey(hkey);
-		if (iReturnVal == ERROR_SUCCESS) return sDoWPath;
+		if (iReturnVal == ERROR_SUCCESS)
+		{
+			// Registry values are ANSI; the rest of the program uses UTF-8.
+			char* sPathUtf8 = PathUtil_AnsiToUtf8(sDoWPath);
+			delete[] sDoWPath;
+			return sPathUtf8;
+		}
 	}
 	
 	// Try to open the DoW Demo registry key
@@ -62,7 +69,13 @@ RAINMAN_API char* Rainman_GetDoWPath()
 		t = dataLen;
 		iReturnVal = RegQueryValueEx(hkey,"InstallLocation",NULL,NULL,(LPBYTE)sDoWPath,&t);
 		RegCloseKey(hkey);
-		if (iReturnVal == ERROR_SUCCESS) return sDoWPath;
+		if (iReturnVal == ERROR_SUCCESS)
+		{
+			// Registry values are ANSI; the rest of the program uses UTF-8.
+			char* sPathUtf8 = PathUtil_AnsiToUtf8(sDoWPath);
+			delete[] sDoWPath;
+			return sPathUtf8;
+		}
 	}
 
 	#endif
@@ -94,7 +107,13 @@ RAINMAN_API char* Rainman_GetDCPath()
 		t = dataLen;
 		iReturnVal = RegQueryValueEx(hkey,"InstallLocation",NULL,NULL,(LPBYTE)sDoWPath,&t);
 		RegCloseKey(hkey);
-		if (iReturnVal == ERROR_SUCCESS) return sDoWPath;
+		if (iReturnVal == ERROR_SUCCESS)
+		{
+			// Registry values are ANSI; the rest of the program uses UTF-8.
+			char* sPathUtf8 = PathUtil_AnsiToUtf8(sDoWPath);
+			delete[] sDoWPath;
+			return sPathUtf8;
+		}
 	}
 
 	#endif
@@ -126,7 +145,13 @@ RAINMAN_API char* Rainman_GetSSPath()
 		t = dataLen;
 		iReturnVal = RegQueryValueEx(hkey,"InstallLocation",NULL,NULL,(LPBYTE)sDoWPath,&t);
 		RegCloseKey(hkey);
-		if (iReturnVal == ERROR_SUCCESS) return sDoWPath;
+		if (iReturnVal == ERROR_SUCCESS)
+		{
+			// Registry values are ANSI; the rest of the program uses UTF-8.
+			char* sPathUtf8 = PathUtil_AnsiToUtf8(sDoWPath);
+			delete[] sDoWPath;
+			return sPathUtf8;
+		}
 	}
 
 	#endif

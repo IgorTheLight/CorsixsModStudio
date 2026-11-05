@@ -34,6 +34,7 @@ public:
 	void OnTreeTooltip(wxTreeEvent& event);
 	void OnTreeExpanding(wxTreeEvent& event);
 	void OnTreeRightClick(wxTreeEvent& event);
+	void OnTreeLeftDown(wxMouseEvent& event);
 
 	void OnActivated();
 

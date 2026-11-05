@@ -52,7 +52,7 @@ S(app_title, "Corsix\'s Mod Studio DEBUG")
 #else
 S(app_title, "Corsix\'s Mod Studio")
 #endif
-S(app_version, "0.5.6")
+S(app_version, "0.5.7")
 SE(app_name, wxString().Append(AppStr(app_title)).Append(wxT(" ")).Append(AppStr(app_version)))
 S(app_filespath, ".\\Mod_Studio_Files\\")
 SE(app_dictionariespath, wxString().Append(AppStr(app_filespath)).Append(wxT("dictionaries\\")))
@@ -71,8 +71,6 @@ SE(app_lua51file, wxString().Append(AppStr(app_filespath)).Append(wxT("lua512p.d
 S(app_helpurl, ".\\Mod_Studio_Files\\docs\\general-1.html")
 S(app_datamissing_title, "Incomplete installation")
 S(app_datamissing, "Corsix\'s Mod Studio could not find its data files in:\n\n%s\n\nThe following files are missing:%s\n\nThe program needs the whole Mod_Studio_Files folder next to the executable. Extract the complete package and try again.")
-S(path_notansi_title, "Unsupported characters in path")
-S(path_notansi, "The selected path contains characters that this Windows installation\'s ANSI code page cannot represent:\n\n%s\n\nMove the file or folder to a path that only uses characters supported by your system locale, then try again.")
 S(modsave_prompt, "The mod properties have been modified. Save them to the .module file?")
 S(modsave_good, "The .module file has been saved.")
 S(modsave_nofile, "These properties cannot be saved because this mod was loaded from an SGA archive, so there is no .module file to update.")

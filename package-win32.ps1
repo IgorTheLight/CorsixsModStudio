@@ -45,7 +45,7 @@ if (-not $OutputDirectory) {
 }
 
 $cmakeLists = Get-Content -LiteralPath (Join-Path $repoRoot 'CMakeLists.txt') -Raw
-$version = '0.5.6'
+$version = '0.5.7'
 if ($cmakeLists -match 'project\s*\(\s*CorsixsModStudio\s+VERSION\s+([0-9][0-9.]*)') {
     $version = $Matches[1]
 }

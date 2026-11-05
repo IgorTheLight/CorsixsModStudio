@@ -18,6 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
 #include "CRgdHashTable.h"
+#include "PathUtil.h"
 #include "memdebug.h"
 #include "Exception.h"
 
@@ -116,7 +117,7 @@ static char* fgetline(FILE *f, unsigned int iInitSize = 32)
 
 void CRgdHashTable::ExtendWithDictionary(const char* sFile, bool bCustom)
 {
-	FILE *fFile = fopen(sFile, "rb");
+	FILE *fFile = PathUtil_fopen(sFile, "rb");
 	if(fFile == 0) throw new CRainmanException(0, __FILE__, __LINE__, "Failed to open file \'%s\'", sFile);
 	while(!feof(fFile))
 	{
@@ -233,7 +234,7 @@ void CRgdHashTable::ExtendWithDictionary(const char* sFile, bool bCustom)
 
 void CRgdHashTable::XRefWithStringList(const char* sFile)
 {
-	FILE *fFile = fopen(sFile, "rb");
+	FILE *fFile = PathUtil_fopen(sFile, "rb");
 	if(fFile == 0) throw new CRainmanException(0, __FILE__, __LINE__, "Failed to open file \'%s\'", sFile);
 	while(!feof(fFile))
 	{
@@ -264,7 +265,7 @@ void CRgdHashTable::XRefWithStringList(const char* sFile)
 
 void CRgdHashTable::SaveCustomKeys(const char* sFile)
 {
-	FILE *fFile = fopen(sFile, "wb");
+	FILE *fFile = PathUtil_fopen(sFile, "wb");
 	if(fFile == 0) throw new CRainmanException(0, __FILE__, __LINE__, "Failed to open file \'%s\'", sFile);
 
 	fputs("#RGD_DIC\n# This dictionary is generated from any keys that are \'discovered\'\n", fFile);

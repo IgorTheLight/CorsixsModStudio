@@ -18,6 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
 #include "CUcsFile.h"
+#include "PathUtil.h"
 #include "memdebug.h"
 #include "Exception.h"
 
@@ -64,7 +65,7 @@ void CUcsFile::New()
 
 void CUcsFile::Save(const char* sFile)
 {
-	FILE* f = fopen(sFile, "wb");
+	FILE* f = PathUtil_fopen(sFile, "wb");
 	if(!f) throw new CRainmanException(0, __FILE__, __LINE__, "Cannot open file \'%s\' in mode \'wb\'", sFile);
 	unsigned short iHeader = 0xFEFF;
 	fwrite(&iHeader, 2, 1, f);

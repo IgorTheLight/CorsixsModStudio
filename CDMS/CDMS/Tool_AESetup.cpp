@@ -77,7 +77,7 @@ void frmUCSToDAT::OnCancelClick(wxCommandEvent& event)
 void frmUCSToDAT::OnBrowseOutClick(wxCommandEvent& event)
 { UNUSED(event);
 	wxString sOutFile = wxFileSelector(AppStr(aesetup_outselect), wxT(""), m_pOutFile->GetValue(), wxT("dat"), AppStr(aesetup_filter), wxSAVE | wxOVERWRITE_PROMPT, TheConstruct);
-	if(sOutFile.IsEmpty() || !CheckAnsiPath(sOutFile, this))
+	if(sOutFile.IsEmpty())
 	{
 		return;
 	}
@@ -243,7 +243,7 @@ void UCSToDATConvertor::doConvertion()
 		m_aUCSFileEnds[i] = pMap->end();
 	}
 
-	m_fDAT = fopen(m_sOutputName, "wt");
+	m_fDAT = FopenUtf8(m_sOutputName, "wt");
 	if(m_fDAT == 0)
 	{
 		delete[] m_aUCSFiles;

@@ -18,6 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
 #include "CSgaCreator.h"
+#include "PathUtil.h"
 #include "Internal_Util.h"
 #include "CMemoryStore.h"
 #include "..\zLib/zlib.h"
@@ -194,7 +195,7 @@ void CSgaCreator::CreateSga(IDirectoryTraverser::IIterator* pDirectory, IFileSto
 	{
 		unsigned long iTmp = 0;
 		unsigned short iSTmp = 0;
-		fOut = fopen(sOutputFile, "w+b");
+		fOut = PathUtil_fopen(sOutputFile, "w+b");
 		if(fOut == 0) throw new CRainmanException(0, __FILE__, __LINE__, "Cold not open \'%s\' (does the directory exist, and do you have permission to create files there?)", sOutputFile);
 
 		// File signature

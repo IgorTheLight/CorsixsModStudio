@@ -20,6 +20,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #ifdef _DO_INCLUDE_C_DOW_MODULE_H_
 
 #include "CDoWModule.h"
+#include "PathUtil.h"
 #include <time.h>
 #include "memdebug.h"
 #include "Exception.h"
@@ -328,7 +329,7 @@ void CDoWModule::_TryLoadDataGeneric(const char* sModName, const char* sDoWPath,
 	char* sPipeline = CHECK_MEM(new char[strlen(sDoWPath) + 14]);
 	strcpy(sPipeline, sDoWPath);
 	strcat(sPipeline, "\\pipeline.ini");
-	FILE* fPipeline = fopen(sPipeline, "rb");
+	FILE* fPipeline = PathUtil_fopen(sPipeline, "rb");
 	if(fPipeline)
 	{
 		bool bInThisProject = false;
@@ -486,7 +487,7 @@ void CDoWModule::Load(const char* sFile, CALLBACK_ARG)
 		_Clean();
 		throw new CRainmanException(__FILE__, __LINE__, "No filename passed");
 	}
-	FILE *fFile = fopen(sFile, "rb");
+	FILE *fFile = PathUtil_fopen(sFile, "rb");
 	if(fFile == 0)
 	{
 		_Clean();
@@ -1139,7 +1140,7 @@ archive_not_present:
 void CDoWModule::Save(const char* sFile)
 {
 	if(sFile == 0) QUICK_THROW("No file specified")
-	FILE *f = fopen(sFile, "wb");
+	FILE *f = PathUtil_fopen(sFile, "wb");
 	if(!f) throw new CRainmanException(0, __FILE__, __LINE__, "Cannot open file \'%s\'", sFile);
 	// Print nice header
 	fputs(";; //////////////////////////////////////////////////////////////////\xD\n", f);

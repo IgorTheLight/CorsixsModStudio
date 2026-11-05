@@ -66,6 +66,7 @@ public:
 	static bool _IsEngineFileMapName(const char* sName, CModuleFile* pMod);
 
 	void OnSize(wxSizeEvent& event);
+	void OnTreeLeftDown(wxMouseEvent& event);
 	void OnNodeTooltip(wxTreeEvent& event);
 	void OnNodeActivate(wxTreeEvent& event);
 	void OnNodeRightClick(wxTreeEvent& event);

@@ -231,8 +231,6 @@ void frmMassExtract::OnGoClick(wxCommandEvent& event)
 		wxString sSaveDirectory = wxDirSelector(wxT("Choose where to extract folder"));
 		if(sSaveDirectory.IsEmpty())
 			return;
-		if(!CheckAnsiPath(sSaveDirectory, this))
-			return;
 
 		CModuleFile *pModule = TheConstruct->GetModule();
 		pSource = pModule->GetFileMap()->RegisterSource(0, false, 0, "", "", pModule->GetFileSystem(), pModule->GetFileSystem(), true, true, true);

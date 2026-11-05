@@ -18,6 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
 #include "CModuleFile.h"
+#include "PathUtil.h"
 #include "ModuleFileWriter.h"
 #include "Internal_Util.h"
 #include "Exception.h"
@@ -568,7 +569,7 @@ void CModuleFile::LoadModuleFile(const char* sFileName, CALLBACK_ARG)
 	if(sDotLocation) *sDotLocation = 0;
 
 	// Open module file and start processing directives
-	FILE* fModule = fopen(sFileName, "rb");
+	FILE* fModule = PathUtil_fopen(sFileName, "rb");
 	if(fModule == 0) throw new CRainmanException(0, __FILE__, __LINE__, "Unable to open \'%s\' for reading", sFileName);
 	CallCallback(THE_CALLBACK, "Parsing file \'%s\'", sFileName);
 
@@ -600,52 +601,52 @@ void CModuleFile::LoadModuleFile(const char* sFileName, CALLBACK_ARG)
 					if(stricmp(sKey, "UIName") == 0)
 					{
 						if(m_sUiName) free(m_sUiName);
-						m_sUiName = CHECK_MEM(strdup(sValue));
+						m_sUiName = CHECK_MEM(PathUtil_AnsiToUtf8Malloc(sValue));
 					}
 					else if(stricmp(sKey, "Name") == 0)
 					{
 						if(m_sName) free(m_sName);
-						m_sName = CHECK_MEM(strdup(sValue));
+						m_sName = CHECK_MEM(PathUtil_AnsiToUtf8Malloc(sValue));
 					}
 					else if(stricmp(sKey, "Description") == 0)
 					{
 						if(m_sDescription) free(m_sDescription);
-						m_sDescription = CHECK_MEM(strdup(sValue));
+						m_sDescription = CHECK_MEM(PathUtil_AnsiToUtf8Malloc(sValue));
 					}
 					else if(stricmp(sKey, "DllName") == 0)
 					{
 						if(m_sDllName) free(m_sDllName);
-						m_sDllName = CHECK_MEM(strdup(sValue));
+						m_sDllName = CHECK_MEM(PathUtil_AnsiToUtf8Malloc(sValue));
 					}
 					else if(stricmp(sKey, "ModFolder") == 0)
 					{
 						if(m_sModFolder) free(m_sModFolder);
-						m_sModFolder = CHECK_MEM(strdup(sValue));
+						m_sModFolder = CHECK_MEM(PathUtil_AnsiToUtf8Malloc(sValue));
 					}
 					else if(stricmp(sKey, "TextureFE") == 0)
 					{
 						if(m_sTextureFe) free(m_sTextureFe);
-						m_sTextureFe = CHECK_MEM(strdup(sValue));
+						m_sTextureFe = CHECK_MEM(PathUtil_AnsiToUtf8Malloc(sValue));
 					}
 					else if(stricmp(sKey, "TextureIcon") == 0)
 					{
 						if(m_sTextureIcon) free(m_sTextureIcon);
-						m_sTextureIcon = CHECK_MEM(strdup(sValue));
+						m_sTextureIcon = CHECK_MEM(PathUtil_AnsiToUtf8Malloc(sValue));
 					}
 					else if(stricmp(sKey, "PatcherUrl") == 0)
 					{
 						if(m_sPatcherUrl) free(m_sPatcherUrl);
-						m_sPatcherUrl = CHECK_MEM(strdup(sValue));
+						m_sPatcherUrl = CHECK_MEM(PathUtil_AnsiToUtf8Malloc(sValue));
 					}
 					else if(stricmp(sKey, "LocFolder") == 0)
 					{
 						if(m_sLocFolder) free(m_sLocFolder);
-						m_sLocFolder = CHECK_MEM(strdup(sValue));
+						m_sLocFolder = CHECK_MEM(PathUtil_AnsiToUtf8Malloc(sValue));
 					}
 					else if(stricmp(sKey, "ScenarioPackFolder") == 0)
 					{
 						if(m_sScenarioPackFolder) free(m_sScenarioPackFolder);
-						m_sScenarioPackFolder = CHECK_MEM(strdup(sValue));
+						m_sScenarioPackFolder = CHECK_MEM(PathUtil_AnsiToUtf8Malloc(sValue));
 					}
 					else if(stricmp(sKey, "ModVersion") == 0)
 					{
@@ -669,29 +670,31 @@ void CModuleFile::LoadModuleFile(const char* sFileName, CALLBACK_ARG)
 					{
 						CFolderHandler* pObject = CHECK_MEM(new CFolderHandler);
 						m_vFolders.push_back(pObject);
-						pObject->m_sName = CHECK_MEM(strdup(sValue));
+						pObject->m_sName = CHECK_MEM(PathUtil_AnsiToUtf8Malloc(sValue));
 						pObject->m_iNumber = atol(sKey + 11);
 					}
 					else if(strnicmp(sKey, "ArchiveFile.", 12) == 0)
 					{
 						CArchiveHandler* pObject = CHECK_MEM(new CArchiveHandler);
 						m_vArchives.push_back(pObject);
-						pObject->m_sName = CHECK_MEM( (char*)malloc(strlen(sValue) + 5) );
-						sprintf(pObject->m_sName, "%s.sga", sValue);
+						char* sArchiveUtf8 = PathUtil_AnsiToUtf8(sValue);
+						pObject->m_sName = CHECK_MEM( (char*)malloc(strlen(sArchiveUtf8) + 5) );
+						sprintf(pObject->m_sName, "%s.sga", sArchiveUtf8);
+						delete[] sArchiveUtf8;
 						pObject->m_iNumber = atol(sKey + 12);
 					}
 					else if(strnicmp(sKey, "RequiredMod.", 12) == 0)
 					{
 						CRequiredHandler* pObject = CHECK_MEM(new CRequiredHandler);
 						m_vRequireds.push_back(pObject);
-						pObject->m_sName = CHECK_MEM(strdup(sValue));
+						pObject->m_sName = CHECK_MEM(PathUtil_AnsiToUtf8Malloc(sValue));
 						pObject->m_iNumber = atol(sKey + 12);
 					}
 					else if(strnicmp(sKey, "CompatableMod.", 14) == 0)
 					{
 						CCompatibleHandler* pObject = CHECK_MEM(new CCompatibleHandler);
 						m_vCompatibles.push_back(pObject);
-						pObject->m_sName = CHECK_MEM(strdup(sValue));
+						pObject->m_sName = CHECK_MEM(PathUtil_AnsiToUtf8Malloc(sValue));
 						pObject->m_iNumber = atol(sKey + 12);
 					}
 				}
@@ -709,14 +712,16 @@ void CModuleFile::LoadModuleFile(const char* sFileName, CALLBACK_ARG)
 					if(stricmp(sKey, "folder") == 0)
 					{
 						if(pCurrentDataSource->m_sFolder) free(pCurrentDataSource->m_sFolder);
-						pCurrentDataSource->m_sFolder = CHECK_MEM(strdup(sValue));
+						pCurrentDataSource->m_sFolder = CHECK_MEM(PathUtil_AnsiToUtf8Malloc(sValue));
 					}
 					if(strnicmp(sKey, "archive.", 8) == 0)
 					{
 						CArchiveHandler* pObject = CHECK_MEM(new CArchiveHandler);
 						pCurrentDataSource->m_vArchives.push_back(pObject);
-						pObject->m_sName = CHECK_MEM( (char*)malloc(strlen(sValue) + 5) );
-						sprintf(pObject->m_sName, "%s.sga", sValue);
+						char* sArchiveUtf8 = PathUtil_AnsiToUtf8(sValue);
+						pObject->m_sName = CHECK_MEM( (char*)malloc(strlen(sArchiveUtf8) + 5) );
+						sprintf(pObject->m_sName, "%s.sga", sArchiveUtf8);
+						delete[] sArchiveUtf8;
 						pObject->m_iNumber = atol(sKey + 8);
 					}
 				}
@@ -893,7 +898,7 @@ void CModuleFile::_DoLoadDataGeneric(CALLBACK_ARG)
 	// Get folder from pipeline.ini
 	char* sPipelineFile = new char[strlen(m_sApplicationPath) + 16];
 	sprintf(sPipelineFile, "%spipeline.ini", m_sApplicationPath);
-	FILE* fModule = fopen(sPipelineFile, "rb");
+	FILE* fModule = PathUtil_fopen(sPipelineFile, "rb");
 	if(fModule == 0)
 	{
 		delete[] sPipelineFile;
@@ -934,7 +939,7 @@ void CModuleFile::_DoLoadDataGeneric(CALLBACK_ARG)
 					if(stricmp(sKey, "DataGeneric") == 0)
 					{
 						if(sDataGenericValue) free(sDataGenericValue);
-						sDataGenericValue = CHECK_MEM(strdup(sValue));
+						sDataGenericValue = CHECK_MEM(PathUtil_AnsiToUtf8Malloc(sValue));
 					}
 				}
 				catch(CRainmanException *pE)
